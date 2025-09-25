@@ -13,7 +13,9 @@ import java.time.Period;
 @Table(name = "students")
 //@DiscriminatorValue("STUDENT")
 public class Student extends Person{
-    //private String group;
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
     private String level;
     private String enterYear;
 }
