@@ -1,13 +1,16 @@
 package _inc.studentApp.controller;
 
-import _inc.studentApp.model.Position;
-import _inc.studentApp.model.Student;
-import _inc.studentApp.model.Employee;
+import _inc.studentApp.DTO.*;
+import _inc.studentApp.complexKeys.DisciplinesKey;
+import _inc.studentApp.model.*;
 import _inc.studentApp.service.UnivService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -20,8 +23,8 @@ public class UnivController {
 
     // student methods
     @GetMapping("/get_students")
-    public List<Student> findAllStudent(){
-        return service.findAllStudent();
+    public List<StudentDTO> findAllStudent(){
+        return service.findAllStudent().stream().map(StudentDTO::fromEntity).collect(Collectors.toList());
     }
     @PostMapping("/save_student")
     public String saveStudent(@RequestBody Student student) {
@@ -29,11 +32,13 @@ public class UnivController {
         return "Student " + student.getEmail() + " successfully saved";
     }
     @GetMapping("/student-{email}")
-    public Student findStudentByEmail(@PathVariable("email") String email) {
-        return service.findStudentByEmail(email);
+    public StudentDTO findStudentByEmail(@PathVariable("email") String email) {
+        return StudentDTO.fromEntity(service.findStudentByEmail(email));
     }
     @PutMapping("update_student")
-    public Student updateStudent(@RequestBody Student student) { return service.updateStudent(student); }
+    public StudentDTO updateStudent(@RequestBody Student student) {
+        return StudentDTO.fromEntity(service.updateStudent(student));
+    }
 
     @DeleteMapping("delete_student/{email}")
     public void deleteStudent(@PathVariable String email) {
@@ -43,16 +48,16 @@ public class UnivController {
 
     // employee methods
     @GetMapping("/get_employees")
-    public List<Employee> findAllEmployee(){
-        return service.findAllEmployee();
+    public List<EmployeeDTO> findAllEmployee(){
+        return service.findAllEmployee().stream().map(EmployeeDTO::fromEntity).collect(Collectors.toList());
     }
     @PostMapping("/save_employee")
-    public String saveEmployee(@RequestBody Employee employee) {
-        service.saveEmployee(employee);
+    public String saveEmployee(@RequestBody EmployeeRequest request) {
+        Employee employee = service.saveEmployee(request);
         return "Student " + employee.getEmail() + " successfully saved";
     }
     @GetMapping("/employee-{email}")
-    public Employee findEmployeeByEmail(@PathVariable("email") String email) {
+    public Optional<Employee> findEmployeeByEmail(@PathVariable("email") String email) {
         return service.findEmployeeByEmail(email);
     }
     @PutMapping("update_employee")
@@ -64,6 +69,30 @@ public class UnivController {
         service.deleteEmployee(email);
     }
 
+    // group methods
+    @GetMapping("/get_groups")
+    public List<Group> findAllGroup(){
+        return service.findAllGroups();
+    }
+    @PostMapping("/save_group")
+    public String saveGroup(@RequestBody Group group) {
+        service.saveGroup(group);
+        return "Group " + group.getGroupName() + " successfully saved";
+    }
+    @GetMapping("/group-{name}")
+    public Optional<Group> findGroupByName(@PathVariable("name") String name) {
+        return service.findByGroupName(name);
+    }
+    @PutMapping("update_group/{name}/{newName}")
+    public Group updateGroup(@PathVariable("name") String name, @PathVariable("newName") String newName) {
+        return service.updateGroup(name, newName);
+    }
+    @DeleteMapping("delete_group/{name}")
+    public void deleteGroup(@PathVariable("name") String name) {
+        service.deleteGroup(name);
+    }
+
+
     // position methods
     @GetMapping("/get_positions")
     public List<Position> findAllPosition(){
@@ -74,12 +103,8 @@ public class UnivController {
         service.savePosition(position);
         return "Student " + position.getPositionName() + " successfully saved";
     }
-    /*@GetMapping("/position-{ID}")
-    public Position findPositionById(@PathVariable("ID") Long id) {
-        return service.findPositionByID(id);
-    }*/
     @GetMapping("/position-{name}")
-    public List<Position> findPositionByName(@PathVariable("name") String name) {
+    public Optional<Position> findPositionByName(@PathVariable("name") String name) {
         return service.findByPositionName(name);
     }
     @PutMapping("update_position")
@@ -89,5 +114,34 @@ public class UnivController {
     @DeleteMapping("delete_position/{id}")
     public void deletePosition(@PathVariable Long id) {
         service.deletePosition(id);
+    }
+
+
+    // discipline methods
+    @GetMapping("/get_disciplines")
+    public List<DisciplineDTO> findAllDisciplines(){
+        return service.findAllDisciplines().stream().map(DisciplineDTO::fromEntity).collect(Collectors.toList());
+    }
+    @PostMapping("/save_discipline")
+    public String saveDiscipline(@RequestBody DisciplineRequest request) {
+        Disciplines created = service.saveDiscipline(request);
+        return "Discipline " + created.getDisciplineName() + " successfully saved";
+    }
+    // TODO: DisciplineDTO vmesto Disciplines
+    @GetMapping("/discipline_find")
+    public DisciplineDTO findDisciplineByName(@RequestBody DisciplinesKey dk) {
+        Disciplines discipline = service.findByDisciplineKey(dk).orElseThrow(() -> new EntityNotFoundException("Discipline not found"));
+        return DisciplineDTO.fromEntity(discipline);
+    }
+    // TODO: DisciplineDTO vmesto Disciplines
+    @PutMapping("update_discipline")
+    public DisciplineDTO updateDiscipline(@RequestBody DisciplineUpdRequest request) {
+        Disciplines disciplineUpd = service.updateDiscipline(request);
+        return DisciplineDTO.fromEntity(disciplineUpd);
+    }
+    // TODO: DisciplineRequest vmesto Disciplines
+    @DeleteMapping("delete_discipline")
+    public void deleteDiscipline(@RequestBody DisciplineRequest request) {
+        service.deleteDiscipline(request);
     }
 }

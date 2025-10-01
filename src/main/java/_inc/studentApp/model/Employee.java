@@ -1,8 +1,11 @@
 package _inc.studentApp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,6 +16,8 @@ import java.util.Set;
 @Data
 @Entity
 @Table(name = "employees")
+@NoArgsConstructor
+@Setter
 public class Employee extends Person{
     @ManyToMany
     @JoinTable(
@@ -20,9 +25,12 @@ public class Employee extends Person{
             joinColumns = {@JoinColumn(name = "employee_id")},
             inverseJoinColumns = {@JoinColumn(name = "position_id")}
     )
+    @JsonIgnore
     private Set<Position> positions = new HashSet<>();
     private int experience;
 
-    @OneToMany(mappedBy = "teacherId")
+    @OneToMany(mappedBy = "teacherEmail")
+    @JsonIgnore
     private List<Disciplines> disciplines = new ArrayList<>();
+
 }

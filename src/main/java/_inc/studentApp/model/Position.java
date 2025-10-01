@@ -14,6 +14,7 @@ public class Position {
     @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
     private String positionName;
+
     @ManyToMany(mappedBy = "positions")
     private Set<Employee> employees = new HashSet<>();
 }

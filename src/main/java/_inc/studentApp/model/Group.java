@@ -1,9 +1,7 @@
 package _inc.studentApp.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -17,8 +15,10 @@ public class Group {
     @Id
     private String groupName;
 
-    @OneToMany(mappedBy = "group")
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Student> students = new LinkedList<>();
-    @OneToMany(mappedBy = "groupName")
+    @OneToMany(mappedBy = "groupName", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Disciplines> disciplines = new ArrayList<>();
 }
