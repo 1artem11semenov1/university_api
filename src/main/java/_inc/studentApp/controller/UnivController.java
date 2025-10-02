@@ -127,19 +127,16 @@ public class UnivController {
         Disciplines created = service.saveDiscipline(request);
         return "Discipline " + created.getDisciplineName() + " successfully saved";
     }
-    // TODO: DisciplineDTO vmesto Disciplines
     @GetMapping("/discipline_find")
     public DisciplineDTO findDisciplineByName(@RequestBody DisciplinesKey dk) {
         Disciplines discipline = service.findByDisciplineKey(dk).orElseThrow(() -> new EntityNotFoundException("Discipline not found"));
         return DisciplineDTO.fromEntity(discipline);
     }
-    // TODO: DisciplineDTO vmesto Disciplines
     @PutMapping("update_discipline")
     public DisciplineDTO updateDiscipline(@RequestBody DisciplineUpdRequest request) {
         Disciplines disciplineUpd = service.updateDiscipline(request);
         return DisciplineDTO.fromEntity(disciplineUpd);
     }
-    // TODO: DisciplineRequest vmesto Disciplines
     @DeleteMapping("delete_discipline")
     public void deleteDiscipline(@RequestBody DisciplineRequest request) {
         service.deleteDiscipline(request);

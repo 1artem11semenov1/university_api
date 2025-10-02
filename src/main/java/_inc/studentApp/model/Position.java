@@ -1,6 +1,7 @@
 package _inc.studentApp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.HashSet;
@@ -13,6 +14,7 @@ public class Position {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
+    @NotBlank
     private String positionName;
 
     @ManyToMany(mappedBy = "positions")

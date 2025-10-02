@@ -1,7 +1,6 @@
 package _inc.studentApp.DTO;
 
 import _inc.studentApp.model.Disciplines;
-import _inc.studentApp.model.Group;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;

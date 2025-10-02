@@ -2,6 +2,7 @@ package _inc.studentApp.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,19 +14,16 @@ import java.time.Period;
 @Getter
 @Setter
 public abstract class Person {
-    /*@Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    private Long id;*/
     private String firstName;
     private String lastName;
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @NotNull
     private LocalDate dateOfBirth;
     @Id
     @Column(unique = true)
     private String email;
     @Transient
     private int age;
-    //private String position;
     public int getAge() {
         if (dateOfBirth != null) {
             return Period.between(dateOfBirth, LocalDate.now()).getYears();
