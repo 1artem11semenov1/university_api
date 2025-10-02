@@ -1,0 +1,208 @@
+# Описание
+University API - веб-приложение для хранения данных об университете. Целью создания данного сайта является автоматизация работы с информацией о вузе. 
+Предметной областью являются студенты и работники ВУЗа, преподаваемые дисциплины, подразделения университета и аудитории.
+
+# Данные
+#### Схема бд находится в src/scheme/схема1.png
+## Имеются следующие сущности:
+##### Приведен не полный перечень, т.к. они ещё не прописаны. Позже добавлю сущности, связанные с подразделениями ВУЗа, аудиториями и расписанием.
+
+#### Student (содержатся в таблице Students)
+- email - varchar, primary key
+- first_name - varchar
+- last_name - varchar
+- date_of_birth - date, not null
+- group_id - varchar, not null + ограничение на пустую строку (not blank)
+- level - varchar
+- enterYear - varchar
+
+Код класса сущности:
+```
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Entity
+@Table(name = "students")
+public class Student extends Person{
+    @ManyToOne
+    @JoinColumn(
+            name = "group_id",
+            foreignKey = @ForeignKey(
+                    name = "group_id",
+                    foreignKeyDefinition = "FOREIGN KEY (group_id) REFERENCES groups(group_name) ON UPDATE CASCADE ON DELETE SET NULL"
+            )
+    )
+    @NotBlank
+    private Group group;
+    private String level;
+    private String enterYear;
+}
+```
+
+
+
+Родительский класс Person:
+```
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Getter
+@Setter
+public abstract class Person {
+    private String firstName;
+    private String lastName;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @NotNull
+    private LocalDate dateOfBirth;
+    @Id
+    @Column(unique = true)
+    private String email;
+    @Transient
+    private int age;
+    public int getAge() {
+        if (dateOfBirth != null) {
+            return Period.between(dateOfBirth, LocalDate.now()).getYears();
+        }
+        return 0;
+    }
+}
+```
+
+#### Employee (содержатся в таблице employees)
+- email - varchar, primary key
+- first_name - varchar
+- last_name - varchar
+- date_of_birth - date, not null
+- experience - int
+
+Код класса сущности:
+```
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Entity
+@Table(name = "employees")
+@NoArgsConstructor
+@Setter
+public class Employee extends Person{
+    @ManyToMany
+    @JoinTable(
+            name = "employees_positions",
+            joinColumns = {@JoinColumn(name = "employee_id")},
+            inverseJoinColumns = {@JoinColumn(name = "position_id")}
+    )
+    @JsonIgnore
+    private Set<Position> positions = new HashSet<>();
+    private int experience;
+
+    @OneToMany(mappedBy = "teacherEmail")
+    @JsonIgnore
+    private List<Disciplines> disciplines = new ArrayList<>();
+}
+```
+
+#### Position (содержатся в таблице positions)
+- id - int, primary key
+- position_name - varchar, not blank
+
+Код класса сущности:
+```
+@Entity
+@Data
+@Table(name = "positions")
+public class Position {
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private Long id;
+    @NotBlank
+    private String positionName;
+
+    @ManyToMany(mappedBy = "positions")
+    private Set<Employee> employees = new HashSet<>();
+}
+```
+
+#### таблица employees_positions
+- employee_id - int, primary key, foreign key на таблицу employee
+- position_id - varchar, primary key, foreign key на таблицу positions
+
+Служит для связи между employees и positions, не имеет сущности в коде.
+
+#### Group (содержатся в таблице groups)
+- group_name - varchar, primary key, foreign key на таблицу disciplines
+
+Код класса сущности:
+```
+@Entity
+@Data
+@Table(name = "groups")
+public class Group {
+    @Id
+    private String groupName;
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Student> students = new LinkedList<>();
+    @OneToMany(mappedBy = "groupName", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Disciplines> disciplines = new ArrayList<>();
+}
+```
+
+#### Disciplines (содержатся в таблице disciplines)
+- discipline_name - varchar, primary key
+- group_name - varchar, primary key, foreign key на таблицу groups
+- teacher_email - varchar, primary key, foreign key на таблицу employees
+
+Код класса сущности:
+```
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Disciplines {
+    @EmbeddedId
+    private DisciplinesKey id;
+
+    @ManyToOne
+    @MapsId("groupName")
+    @JoinColumn(name = "group_name")
+    private Group groupName;
+
+    @ManyToOne
+    @MapsId("teacherEmail")
+    @JoinColumn(name = "teacher_email")
+    private Employee teacherEmail;
+
+    public String getDisciplineName(){
+        return this.id.getName();
+    }
+}
+```
+
+Класс DisciplinesKey (содержит описание составного ключа для Discipline):
+```
+@Embeddable
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@Getter
+public class DisciplinesKey implements Serializable {
+    private String disciplineName;
+    private String groupName;
+    private String teacherEmail;
+
+    public String getName() {return disciplineName;}
+}
+```
+
+# Пользовательские роли
+Планирую создать 3 роли: студент, преподаватель и администратор. 
+- Студент сможет получить информацию о своей группе, дисциплинах и преподавателях, которые их ведут. 
+- Преподаватель - о том, какие дисциплины в каких группах он ведёт. 
+- Администратор может добавлять и удалять студентов и преподавателей, редактировать информацию о них. Обновлять распиание.
+ 
+# Технологии разработки
+
+Restful API.
+Язык - Java.
+Фреймворк - Spring boot.
+СУБД - PostgreSQL.
+Для связи Java-кода с СУБД использована библиотека Hibernate.
