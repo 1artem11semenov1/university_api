@@ -195,16 +195,16 @@ public class DisciplinesKey implements Serializable {
 #### Unit (содержатся в таблице units)
 
 - unit_name - varchar, primary key
-- address - varchar
+- address - varchar, not blank
 
 Код класса сущности:
 ```
 пока отсутствует
 ```
 
-#### ClassRoom (содержатся в таблице classes)
+#### ClassRoom (содержатся в таблице classrooms)
 
-- number - int, primary key
+- number - varchar, primary key
 - unit_name - varchar, primary key, foreign key на таблицу units
 - capacity - int
 
@@ -215,8 +215,8 @@ public class DisciplinesKey implements Serializable {
 
 #### Distance (содержатся в таблице distances)
 
-- unit_from - varchar, foreign key на таблицу units
-- unit_to - varchar
+- unit_from - varchar, primary key, foreign key на таблицу units
+- unit_to - varchar, primary key
 - time_minutes int
 
 Код класса сущности:
@@ -226,12 +226,12 @@ public class DisciplinesKey implements Serializable {
 
 #### Lesson (содержатся в таблице schedule)
 
-- id - int8, primary_key
 - discipline_name - varchar, foreign key на таблицу disciplines
 - group_name - varchar, primary key, foreign key на таблицу disciplines
 - teacher_email - varchar, primary key, foreign key на таблицу disciplines
-- number - int, foreign key на таблицу classes
-- unit_name - varchar, primary key, foreign key на таблицу classes
+- number - int, foreign key на таблицу classrooms
+- unit_name - varchar, primary key, foreign key на таблицу classrooms
+- идентифицируется по всем полям
 
 Код класса сущности:
 ```
