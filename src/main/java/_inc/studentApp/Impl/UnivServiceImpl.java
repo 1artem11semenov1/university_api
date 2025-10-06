@@ -143,7 +143,7 @@ public class UnivServiceImpl implements UnivService {
                 .orElseThrow(() -> new EntityNotFoundException("Teacher not found"));
 
         DisciplinesKey key = new DisciplinesKey(request.getDisciplineName(), group.getGroupName(), teacher.getEmail());
-        Disciplines discipline = new Disciplines(key, group, teacher);
+        Disciplines discipline = new Disciplines(key, request.getCountHours(), group, teacher,null);
         return d_repository.save(discipline);
     }
     @Override
@@ -159,7 +159,8 @@ public class UnivServiceImpl implements UnivService {
         DisciplineRequest newDisciplineRequest = new DisciplineRequest(
                 request.getNewDisciplineName(),
                 request.getNewGroupName(),
-                request.getNewTeacherEmail()
+                request.getNewTeacherEmail(),
+                request.getNewCountHours()
         );
         return saveDiscipline(newDisciplineRequest);
     }

@@ -2,23 +2,25 @@ package _inc.studentApp.complexKeys;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Embeddable
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
-public class DisciplinesKey implements Serializable {
-    @Column(name = "discipline_name")
-    private String disciplineName;
-    private String groupName;
-    private String teacherEmail;
+public class LessonKey implements Serializable {
+    @Embedded
+    DisciplinesKey discipline;
+    @Embedded
+    ClassRoomKey classroom;
 
-    public String getName() {return disciplineName;}
+    Date date;
 }

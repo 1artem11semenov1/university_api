@@ -14,11 +14,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
-public class DisciplinesKey implements Serializable {
-    @Column(name = "discipline_name")
-    private String disciplineName;
-    private String groupName;
-    private String teacherEmail;
-
-    public String getName() {return disciplineName;}
+public class ClassRoomKey implements Serializable {
+    @Column(name = "number")
+    String classroomNumber;
+    @Column(name = "unit_name")
+    String unitName;
 }

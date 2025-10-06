@@ -12,12 +12,14 @@ public class DisciplineDTO {
     private String disciplineName;
     private String groupName;
     private String teacherEmail;
+    private int countHours;
 
     public static DisciplineDTO fromEntity(Disciplines discipline){
         DisciplineDTO ddto = new DisciplineDTO();
         ddto.setDisciplineName(discipline.getDisciplineName());
         ddto.setGroupName(discipline.getId().getGroupName());
         ddto.setTeacherEmail(discipline.getId().getTeacherEmail());
+        ddto.setCountHours(discipline.getCountHours());
         return ddto;
     }
 }

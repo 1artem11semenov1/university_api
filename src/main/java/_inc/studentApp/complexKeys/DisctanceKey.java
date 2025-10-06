@@ -1,5 +1,6 @@
 package _inc.studentApp.complexKeys;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
@@ -14,11 +15,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
-public class DisciplinesKey implements Serializable {
-    @Column(name = "discipline_name")
-    private String disciplineName;
-    private String groupName;
-    private String teacherEmail;
+public class DisctanceKey implements Serializable {
+    @Column(name = "unit_from")
+    String unitFrom;
 
-    public String getName() {return disciplineName;}
+    @Column(name = "unit_to")
+    String unitTo;
 }

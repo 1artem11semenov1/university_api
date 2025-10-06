@@ -13,4 +13,6 @@ public class DisciplineRequest {
     private String groupName;
     @NotNull
     private String teacherEmail;
+    @NotNull
+    private int countHours;
 }

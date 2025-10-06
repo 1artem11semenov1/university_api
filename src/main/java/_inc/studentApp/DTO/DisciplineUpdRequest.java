@@ -12,9 +12,14 @@ public class DisciplineUpdRequest {
     @NotNull
     private String teacherEmail;
     @NotNull
+    private int countHours;
+
+    @NotNull
     private String newDisciplineName;
     @NotNull
     private String newGroupName;
     @NotNull
     private String newTeacherEmail;
+    @NotNull
+    private int newCountHours;
 }
