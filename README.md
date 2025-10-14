@@ -149,6 +149,7 @@ public class Group {
 - discipline_name - varchar, primary key
 - group_name - varchar, primary key, foreign key на таблицу groups
 - teacher_email - varchar, primary key, foreign key на таблицу employees
+- count_hours - int
 
 Код класса сущности:
 ```
@@ -159,6 +160,9 @@ public class Group {
 public class Disciplines {
     @EmbeddedId
     private DisciplinesKey id;
+
+    @NotNull
+    private int countHours
 
     @ManyToOne
     @MapsId("groupName")
@@ -199,7 +203,23 @@ public class DisciplinesKey implements Serializable {
 
 Код класса сущности:
 ```
-пока отсутствует
+@Data
+@Entity
+@Table(name = "units")
+public class Unit {
+    @Id
+    @Column(name = "unit_name")
+    String unitName;
+
+    @NotBlank
+    String address;
+
+    @OneToMany(mappedBy = "unitName")
+    List<ClassRoom> classrooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "unitFrom")
+    List<Distance> distances = new ArrayList<>();
+}
 ```
 
 #### ClassRoom (содержатся в таблице classrooms)
@@ -210,7 +230,38 @@ public class DisciplinesKey implements Serializable {
 
 Код класса сущности:
 ```
-пока отсутствует
+@Entity
+@Data
+@Table(name = "classrooms")
+public class ClassRoom {
+    @EmbeddedId
+    ClassRoomKey id;
+    int capacity;
+
+    @ManyToOne
+    @MapsId("unitName")
+    @JoinColumn(name = "unit_name")
+    Unit unitName;
+
+    @OneToMany(mappedBy = "classroom")
+    List<Lesson> lessons = new LinkedList<>();
+}
+```
+
+Класс составного ключа:
+```
+@Embeddable
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@Getter
+public class ClassRoomKey implements Serializable {
+    @Column(name = "number")
+    String classroomNumber;
+    @Column(name = "unit_name")
+    String unitName;
+}
+
 ```
 
 #### Distance (содержатся в таблице distances)
@@ -221,9 +272,38 @@ public class DisciplinesKey implements Serializable {
 
 Код класса сущности:
 ```
-пока отсутствует
+@Entity
+@Data
+@Table(name = "distances")
+public class Distance {
+    @EmbeddedId
+    DisctanceKey id;
+
+    @Column(name = "time_minutes")
+    int timeMinutes;
+
+    @ManyToOne
+    @MapsId("unitFrom")
+    @JoinColumn(name = "unit_from")
+    Unit unitFrom;
+}
 ```
 
+Класс составного ключа:
+```
+@Embeddable
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@Getter
+public class DisctanceKey implements Serializable {
+    @Column(name = "unit_from")
+    String unitFrom;
+
+    @Column(name = "unit_to")
+    String unitTo;
+}
+```
 #### Lesson (содержатся в таблице schedule)
 
 - discipline_name - varchar, foreign key на таблицу disciplines
@@ -231,13 +311,54 @@ public class DisciplinesKey implements Serializable {
 - teacher_email - varchar, primary key, foreign key на таблицу disciplines
 - number - int, foreign key на таблицу classrooms
 - unit_name - varchar, primary key, foreign key на таблицу classrooms
+- date - datetime
 - идентифицируется по всем полям
 
 Код класса сущности:
 ```
-пока отсутствует
+@Data
+@Entity
+@Table(name = "schedule")
+public class Lesson {
+    @EmbeddedId
+    LessonKey id;
+
+    @ManyToOne
+    @MapsId("classroom")
+    @JoinColumns({
+            @JoinColumn(name = "classroom_number", referencedColumnName = "number"),
+            @JoinColumn (name = "unit_name", referencedColumnName = "unit_name")
+    })
+    ClassRoom classroom;
+
+    @ManyToOne
+    @MapsId("discipline")
+    @JoinColumns({
+            @JoinColumn(name = "discipline_name", referencedColumnName = "discipline_name"),
+            @JoinColumn (name = "group_name", referencedColumnName = "group_name"),
+            @JoinColumn (name = "teacher_email", referencedColumnName = "teacher_email")
+    })
+    Disciplines discipline;
+}
 ```
 
+Класс составного ключа:
+```
+@Embeddable
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@Getter
+public class LessonKey implements Serializable {
+    @Embedded
+    DisciplinesKey discipline;
+    @Embedded
+    ClassRoomKey classroom;
+
+    Date date;
+}
+
+```
 
 # Пользовательские роли
 Планирую создать 3 роли: студент, преподаватель и администратор. 
