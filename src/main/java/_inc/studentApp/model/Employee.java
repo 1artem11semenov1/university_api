@@ -26,7 +26,7 @@ public class Employee extends Person{
             inverseJoinColumns = {@JoinColumn(name = "position_id")}
     )
     @JsonIgnore
-    private Set<Position> positions = new HashSet<>();
+    private List<Position> positions = new ArrayList<>();
     private int experience;
 
     @OneToMany(mappedBy = "teacherEmail")

@@ -11,12 +11,10 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service("myPersonService")
 @AllArgsConstructor
@@ -29,6 +27,17 @@ public class UnivServiceImpl implements UnivService {
     private final PositionRepository p_repository;
     private final GroupRepository g_repository;
     private final DisciplineRepository d_repository;
+    private final UserRepository u_repository;
+
+    // pswd encoder
+    PasswordEncoder encoder;
+
+    // user methods
+    @Override
+    public User saveUser(User user) {
+        user.setPassword(encoder.encode(user.getPassword()));
+        return u_repository.save(user);
+    }
 
     // methods for students
     public List<Student> findAllStudent() {
@@ -64,7 +73,7 @@ public class UnivServiceImpl implements UnivService {
         employee.setDateOfBirth(request.getDateOfBirth());
         employee.setExperience(request.getExperience());
 
-        Set<Position> positions = new HashSet<>();
+        List<Position> positions = new ArrayList<>();
         for (String posName : request.getPositions()){
             Position pos = p_repository.findByPositionName(posName)
                     .orElseThrow(() -> new EntityNotFoundException("Position not added"));

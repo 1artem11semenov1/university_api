@@ -5,7 +5,8 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Getter
@@ -15,6 +16,7 @@ public class EmployeeRequest {
     private String lastName;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
-    private Set<String> positions;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> positions = new ArrayList<>();
     private int experience;
 }

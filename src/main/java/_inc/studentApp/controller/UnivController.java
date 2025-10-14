@@ -3,9 +3,11 @@ package _inc.studentApp.controller;
 import _inc.studentApp.DTO.*;
 import _inc.studentApp.complexKeys.DisciplinesKey;
 import _inc.studentApp.model.*;
+import _inc.studentApp.service.MyUserDetailsService;
 import _inc.studentApp.service.UnivService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +22,20 @@ public class UnivController {
     // service
     private final UnivService service;
 
+    // security
+    @GetMapping("/welcome")
+    public String welcome(){
+        return "welcome to the unprotected page";
+    }
+    @PostMapping("/new-user")
+    public String addUser(@RequestBody User user){
+        User newUser = service.saveUser(user);
+        return "User " + newUser.getUserName() + " successfully saved";
+    }
 
     // student methods
     @GetMapping("/get_students")
+    //@PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<StudentDTO> findAllStudent(){
         return service.findAllStudent().stream().map(StudentDTO::fromEntity).collect(Collectors.toList());
     }
@@ -48,6 +61,7 @@ public class UnivController {
 
     // employee methods
     @GetMapping("/get_employees")
+    //@PreAuthorize("hasAuthority('ROLE_TEACHER')")
     public List<EmployeeDTO> findAllEmployee(){
         return service.findAllEmployee().stream().map(EmployeeDTO::fromEntity).collect(Collectors.toList());
     }

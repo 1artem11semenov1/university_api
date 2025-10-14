@@ -19,7 +19,7 @@ public class Student extends Person{
                     foreignKeyDefinition = "FOREIGN KEY (group_id) REFERENCES groups(group_name) ON UPDATE CASCADE ON DELETE SET NULL"
             )
     )
-    @NotBlank
+
     private Group group;
     private String level;
     private String enterYear;

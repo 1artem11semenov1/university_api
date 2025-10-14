@@ -11,6 +11,9 @@ import java.util.Optional;
 
 public interface UnivService {
 
+    // user methods
+    User saveUser(User user);
+
     // student methods
     List<Student> findAllStudent();
     Student saveStudent(Student student);
