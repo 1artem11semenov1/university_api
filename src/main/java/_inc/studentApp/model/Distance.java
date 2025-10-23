@@ -1,6 +1,7 @@
 package _inc.studentApp.model;
 
-import _inc.studentApp.complexKeys.DisctanceKey;
+import _inc.studentApp.complexKeys.DistanceKey;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -9,7 +10,7 @@ import lombok.Data;
 @Table(name = "distances")
 public class Distance {
     @EmbeddedId
-    DisctanceKey id;
+    DistanceKey id;
 
     @Column(name = "time_minutes")
     int timeMinutes;
@@ -17,5 +18,6 @@ public class Distance {
     @ManyToOne
     @MapsId("unitFrom")
     @JoinColumn(name = "unit_from")
-    Unit unitFrom;
+    @JsonIgnore
+    Unit unitF;
 }

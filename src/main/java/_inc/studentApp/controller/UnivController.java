@@ -1,7 +1,10 @@
 package _inc.studentApp.controller;
 
 import _inc.studentApp.DTO.*;
+import _inc.studentApp.complexKeys.ClassRoomKey;
 import _inc.studentApp.complexKeys.DisciplinesKey;
+import _inc.studentApp.complexKeys.DistanceKey;
+import _inc.studentApp.complexKeys.LessonKey;
 import _inc.studentApp.model.*;
 import _inc.studentApp.service.MyUserDetailsService;
 import _inc.studentApp.service.UnivService;
@@ -10,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -48,12 +52,12 @@ public class UnivController {
     public StudentDTO findStudentByEmail(@PathVariable("email") String email) {
         return StudentDTO.fromEntity(service.findStudentByEmail(email));
     }
-    @PutMapping("update_student")
+    @PutMapping("/update_student")
     public StudentDTO updateStudent(@RequestBody Student student) {
         return StudentDTO.fromEntity(service.updateStudent(student));
     }
 
-    @DeleteMapping("delete_student/{email}")
+    @DeleteMapping("/delete_student/{email}")
     public void deleteStudent(@PathVariable String email) {
         service.deleteStudent(email);
     }
@@ -74,11 +78,11 @@ public class UnivController {
     public Optional<Employee> findEmployeeByEmail(@PathVariable("email") String email) {
         return service.findEmployeeByEmail(email);
     }
-    @PutMapping("update_employee")
+    @PutMapping("/update_employee")
     public Employee updateEmployee(@RequestBody Employee employee) {
         return service.updateEmployee(employee);
     }
-    @DeleteMapping("delete_employee/{email}")
+    @DeleteMapping("/delete_employee/{email}")
     public void deleteEmployee(@PathVariable String email) {
         service.deleteEmployee(email);
     }
@@ -97,11 +101,11 @@ public class UnivController {
     public Optional<Group> findGroupByName(@PathVariable("name") String name) {
         return service.findByGroupName(name);
     }
-    @PutMapping("update_group/{name}/{newName}")
+    @PutMapping("/update_group/{name}/{newName}")
     public Group updateGroup(@PathVariable("name") String name, @PathVariable("newName") String newName) {
         return service.updateGroup(name, newName);
     }
-    @DeleteMapping("delete_group/{name}")
+    @DeleteMapping("/delete_group/{name}")
     public void deleteGroup(@PathVariable("name") String name) {
         service.deleteGroup(name);
     }
@@ -121,11 +125,11 @@ public class UnivController {
     public Optional<Position> findPositionByName(@PathVariable("name") String name) {
         return service.findByPositionName(name);
     }
-    @PutMapping("update_position")
+    @PutMapping("/update_position")
     public Position updatePosition(@RequestBody Position position) {
         return service.updatePosition(position);
     }
-    @DeleteMapping("delete_position/{id}")
+    @DeleteMapping("/delete_position/{id}")
     public void deletePosition(@PathVariable Long id) {
         service.deletePosition(id);
     }
@@ -146,13 +150,124 @@ public class UnivController {
         Disciplines discipline = service.findByDisciplineKey(dk).orElseThrow(() -> new EntityNotFoundException("Discipline not found"));
         return DisciplineDTO.fromEntity(discipline);
     }
-    @PutMapping("update_discipline")
+    @PutMapping("/update_discipline")
     public DisciplineDTO updateDiscipline(@RequestBody DisciplineUpdRequest request) {
         Disciplines disciplineUpd = service.updateDiscipline(request);
         return DisciplineDTO.fromEntity(disciplineUpd);
     }
-    @DeleteMapping("delete_discipline")
+    @DeleteMapping("/delete_discipline")
     public void deleteDiscipline(@RequestBody DisciplineRequest request) {
         service.deleteDiscipline(request);
     }
+
+    // units methods
+    @GetMapping("/get_units")
+    public List<Unit> findAllUnits(){
+        return service.findAllUnits();
+    }
+    @PostMapping("/save_unit")
+    public String saveUnit(@RequestBody Unit unit) {
+        service.saveUnit(unit);
+        return "Unit " + unit.getUnitName() + " at address " + unit.getAddress() + " successfully saved";
+    }
+    @GetMapping("/unit-{name}")
+    public Optional<Unit> findUnitByName(@PathVariable("name") String name) {
+        return service.findUnitByName(name);
+    }
+    @PutMapping("/update_unit")
+    public Unit updateUnit(@RequestBody UnitUpdRequest request) {
+        return service.updateUnit(request);
+    }
+    @DeleteMapping("/delete_unit/{name}")
+    public void deleteUnit(@PathVariable String name) {
+        service.deleteUnit(name);
+    }
+
+    // classroom methods
+    @GetMapping("/get_classrooms")
+    public List<ClassRoomRequest> findAllClassRooms(){
+        return service.findAllClassRooms().stream().map(ClassRoomRequest::fromEntity).collect(Collectors.toList());
+    }
+    @PostMapping("/save_classroom")
+    public String saveClassRoom(@RequestBody ClassRoomRequest request) {
+        ClassRoom created = service.saveClassRoom(request);
+        return "ClassRoom " + created.getId().getClassroomNumber() + " in unit " + created.getId().getUnitName() + " successfully saved";
+    }
+    @GetMapping("/classroom_find")
+    public ClassRoomRequest findClassRoomById(@RequestBody ClassRoomKey key) {
+        ClassRoom classRoom = service.findClassRoomByID(key).orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
+        return ClassRoomRequest.fromEntity(classRoom);
+    }
+    @PutMapping("/update_classroom")
+    public ClassRoomRequest updateClassRoom(@RequestBody ClassRoomUpdRequest request) {
+        ClassRoom classRoomUpd = service.updateClassRoom(request);
+        return ClassRoomRequest.fromEntity(classRoomUpd);
+    }
+    @DeleteMapping("/delete_classroom")
+    public void deleteClassRoom(@RequestBody ClassRoomKey key) {
+        service.deleteClassRoom(key);
+    }
+
+    // distance methods
+    @GetMapping("/get_distances")
+    public List<DistanceRequest> findAllDistances(){
+        return service.findAllDistances().stream().map(DistanceRequest::fromEntity).collect(Collectors.toList());
+    }
+    @PostMapping("/save_distance")
+    public String saveDistance(@RequestBody DistanceRequest request) {
+        Distance created = service.saveDistance(request);
+        return "Distance from " + created.getId().getUnitFrom() + " to " + created.getId().getUnitTo() + " successfully saved";
+    }
+    @GetMapping("/distance_find")
+    public DistanceRequest findDistanceById(@RequestBody DistanceKey key) {
+        Distance dist = service.findDistanceByID(key).orElseThrow(() -> new EntityNotFoundException("Distance not found"));
+        return DistanceRequest.fromEntity(dist);
+    }
+    @PutMapping("/update_distance")
+    public DistanceRequest updateDistance(@RequestBody DistanceRequest request) {
+        Distance distUpd = service.updateDistance(request);
+        return DistanceRequest.fromEntity(distUpd);
+    }
+    @DeleteMapping("/delete_distance")
+    public void deleteDistance(@RequestBody DistanceKey key) {
+        service.deleteDistance(key);
+    }
+
+    // lesson methods
+    @GetMapping("/get_lessons")
+    public List<LessonRequest> findAllLessons(){
+        return service.findAllLessons().stream().map(LessonRequest::fromEntity).collect(Collectors.toList());
+    }
+    @PostMapping("/save_lesson")
+    public String saveLesson(@RequestBody LessonRequest request) {
+        Lesson created = service.saveLesson(request);
+        return "Lesson of " + created.getId().getDiscipline().getDisciplineName()
+                + " for group " + created.getId().getDiscipline().getGroupName()
+                + " with teacher " + created.getId().getDiscipline().getTeacherEmail()
+                + " in classroom " + created.getId().getClassroom().getClassroomNumber()
+                + " successfully saved";
+    }
+    @GetMapping("/lesson_find")
+    public LessonRequest findLessonById(@RequestBody LessonRequest request) {
+        Lesson lesson = service.findLessonByID(request).orElseThrow(() -> new EntityNotFoundException("Lesson not found"));
+        return LessonRequest.fromEntity(lesson);
+    }
+    @GetMapping("/find_lesson_ondate")
+    public List<LessonRequest> findLessonsByDate(@RequestBody DateRequest request){
+        return service.findLessonsByDate(request.getDate()).stream().map(LessonRequest::fromEntity).collect(Collectors.toList());
+    }
+    @PutMapping("/update_lesson")
+    public LessonRequest updateLesson(@RequestBody LessonUpdRequest request) {
+        Lesson lessonUpd = service.updateLesson(request);
+        return LessonRequest.fromEntity(lessonUpd);
+    }
+    @DeleteMapping("/delete_lesson")
+    public void deleteLesson(@RequestBody LessonRequest request) {
+        service.deleteLesson(request);
+    }
+    @DeleteMapping("/delete_all_lessons")
+    public void deleteAllLessons() {
+        service.deleteAllLessons();
+    }
+
 }

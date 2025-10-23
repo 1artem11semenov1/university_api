@@ -15,7 +15,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
-public class DisctanceKey implements Serializable {
+public class DistanceKey implements Serializable {
     @Column(name = "unit_from")
     String unitFrom;
 

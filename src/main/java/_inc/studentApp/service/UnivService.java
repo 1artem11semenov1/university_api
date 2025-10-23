@@ -1,11 +1,13 @@
 package _inc.studentApp.service;
 
-import _inc.studentApp.DTO.DisciplineRequest;
-import _inc.studentApp.DTO.DisciplineUpdRequest;
-import _inc.studentApp.DTO.EmployeeRequest;
+import _inc.studentApp.DTO.*;
+import _inc.studentApp.complexKeys.ClassRoomKey;
 import _inc.studentApp.complexKeys.DisciplinesKey;
+import _inc.studentApp.complexKeys.DistanceKey;
+import _inc.studentApp.complexKeys.LessonKey;
 import _inc.studentApp.model.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,4 +52,34 @@ public interface UnivService {
     Optional<Disciplines> findByDisciplineKey(DisciplinesKey dk);
     Disciplines updateDiscipline(DisciplineUpdRequest request);
     void deleteDiscipline(DisciplineRequest request);
+
+    // unit methods
+    List<Unit> findAllUnits();
+    Unit saveUnit(Unit unit);
+    Optional<Unit> findUnitByName(String unitName);
+    Unit updateUnit(UnitUpdRequest unit);
+    void deleteUnit(String unitName);
+
+    // classroom methods
+    List<ClassRoom> findAllClassRooms();
+    ClassRoom saveClassRoom(ClassRoomRequest request);
+    Optional<ClassRoom> findClassRoomByID(ClassRoomKey id);
+    ClassRoom updateClassRoom(ClassRoomUpdRequest unit);
+    void deleteClassRoom(ClassRoomKey id);
+
+    // distance methods
+    List<Distance> findAllDistances();
+    Distance saveDistance(DistanceRequest request);
+    Optional<Distance> findDistanceByID(DistanceKey id);
+    Distance updateDistance(DistanceRequest request);
+    void deleteDistance(DistanceKey id);
+
+    // lesson methods
+    List<Lesson> findAllLessons();
+    Lesson saveLesson(LessonRequest request);
+    Optional<Lesson> findLessonByID(LessonRequest request);
+    List<Lesson> findLessonsByDate(Date date);
+    Lesson updateLesson(LessonUpdRequest request);
+    void deleteLesson(LessonRequest request);
+    void deleteAllLessons();
 }

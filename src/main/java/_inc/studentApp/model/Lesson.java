@@ -2,11 +2,15 @@ package _inc.studentApp.model;
 
 import _inc.studentApp.complexKeys.LessonKey;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(name = "schedule")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Lesson {
     @EmbeddedId
     LessonKey id;

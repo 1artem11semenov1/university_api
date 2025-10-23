@@ -1,9 +1,10 @@
 package _inc.studentApp.Impl;
 
-import _inc.studentApp.DTO.DisciplineRequest;
-import _inc.studentApp.DTO.DisciplineUpdRequest;
-import _inc.studentApp.DTO.EmployeeRequest;
+import _inc.studentApp.DTO.*;
+import _inc.studentApp.complexKeys.ClassRoomKey;
 import _inc.studentApp.complexKeys.DisciplinesKey;
+import _inc.studentApp.complexKeys.DistanceKey;
+import _inc.studentApp.complexKeys.LessonKey;
 import _inc.studentApp.model.*;
 import _inc.studentApp.repository.*;
 import _inc.studentApp.service.UnivService;
@@ -28,6 +29,10 @@ public class UnivServiceImpl implements UnivService {
     private final GroupRepository g_repository;
     private final DisciplineRepository d_repository;
     private final UserRepository u_repository;
+    private final UnitRepository un_repository;
+    private final ClassRoomRepository c_repository;
+    private final DistanceRepository dist_repository;
+    private final LessonRepository l_repository;
 
     // pswd encoder
     PasswordEncoder encoder;
@@ -178,4 +183,169 @@ public class UnivServiceImpl implements UnivService {
         DisciplinesKey dk = new DisciplinesKey(request.getDisciplineName(), request.getGroupName(), request.getTeacherEmail());
         d_repository.deleteById(dk);
     }
+
+    // methods for units
+    public List<Unit> findAllUnits() {
+        return un_repository.findAll();
+    }
+    @Override
+    public Unit saveUnit(Unit unit) {
+        return un_repository.save(unit);
+    }
+    @Override
+    public Optional<Unit> findUnitByName(String unitName) {
+        return un_repository.findById(unitName);
+    }
+    @Override
+    public Unit updateUnit(UnitUpdRequest request) {
+        Unit old = un_repository.findById(request.getOldName()).orElseThrow();
+        List<ClassRoom> classRooms = old.getClassrooms();
+        List<Distance> distances = old.getDistances();
+        un_repository.deleteById(request.getOldName());
+        Unit newUnit = new Unit();
+        newUnit.setUnitName(request.getNewName());
+        newUnit.setAddress(request.getNewAddress());
+        newUnit.setClassrooms(classRooms);
+        newUnit.setDistances(distances);
+        return un_repository.save(newUnit);
+    }
+    @Transactional
+    public void deleteUnit(String unitName) {
+        un_repository.deleteById(unitName);
+    }
+
+    // methods for classrooms
+    public List<ClassRoom> findAllClassRooms() { return c_repository.findAll(); }
+    @Override
+    public ClassRoom saveClassRoom(ClassRoomRequest request) {
+        ClassRoomKey key = new ClassRoomKey(request.getClassroomNumber(), request.getUnitName());
+        Unit unit = un_repository.findById(request.getUnitName()).orElseThrow();
+        ClassRoom newClassRoom = new ClassRoom();
+        newClassRoom.setId(key);
+        newClassRoom.setCapacity(request.getCapacity());
+        newClassRoom.setUnit(unit);
+        return c_repository.save(newClassRoom);
+    }
+    @Override
+    public Optional<ClassRoom> findClassRoomByID(ClassRoomKey id) {
+        return c_repository.findById(id);
+    }
+    @Override
+    public ClassRoom updateClassRoom(ClassRoomUpdRequest request) {
+        ClassRoom newClassRoom = new ClassRoom();
+        ClassRoomKey key = new ClassRoomKey(request.getNewNumber(), request.getOld().getUnitName());
+        Unit unit = un_repository.findById(request.getOld().getUnitName()).orElseThrow();
+        newClassRoom.setId(key);
+        newClassRoom.setCapacity(request.getNewCapacity());
+        newClassRoom.setUnit(unit);
+        c_repository.deleteById(request.getOld());
+        return c_repository.save(newClassRoom);
+    }
+    @Transactional
+    public void deleteClassRoom(ClassRoomKey id) {
+        c_repository.deleteById(id);
+    }
+
+    // methods for distances
+    public List<Distance> findAllDistances() {
+        return dist_repository.findAll();
+    }
+    @Override
+    public Distance saveDistance(DistanceRequest request) {
+        Unit uf = un_repository.findById(request.getUnitFrom()).orElseThrow();
+        Unit ut = un_repository.findById(request.getUnitTo()).orElseThrow();
+
+        // save reverse distance
+        DistanceRequest reverseDistance = new DistanceRequest(request.getUnitTo(), request.getUnitFrom(), request.getTime());
+        dist_repository.save(reverseDistance.toEntity(ut));
+
+        // save main distance
+        return dist_repository.save(request.toEntity(uf));
+    }
+    @Override
+    public Optional<Distance> findDistanceByID(DistanceKey id) {
+        return dist_repository.findById(id);
+    }
+    @Override
+    public Distance updateDistance(DistanceRequest request) { return saveDistance(request); }
+    @Transactional
+    public void deleteDistance(DistanceKey id) {
+        // delete main
+        dist_repository.deleteById(id);
+        // delete reverse
+        DistanceKey reverseKey = new DistanceKey(id.getUnitTo(), id.getUnitFrom());
+        dist_repository.deleteById(reverseKey);
+    }
+
+    // lesson methods
+    @Override
+    public List<Lesson> findAllLessons() {
+        return l_repository.findAll();
+    }
+
+    @Override
+    public Lesson saveLesson(LessonRequest request) {
+        Disciplines discipline = d_repository
+                .findById(
+                        new DisciplinesKey(
+                                request.getDisciplineName(), request.getGroupName(), request.getTeacherEmail()
+                        )
+                ).orElseThrow();
+        ClassRoom classRoom = c_repository
+                .findById(
+                        new ClassRoomKey(
+                                request.getClassroomNumber(), request.getUnitName()
+                        )
+                ).orElseThrow();
+        return l_repository.save(request.toEntity(discipline, classRoom));
+    }
+
+    @Override
+    public Optional<Lesson> findLessonByID(LessonRequest request) {
+        Disciplines discipline = d_repository
+                .findById(
+                        new DisciplinesKey(request.getDisciplineName(), request.getGroupName(), request.getTeacherEmail())
+                ).orElseThrow();
+        ClassRoom classRoom = c_repository
+                .findById(
+                        new ClassRoomKey(request.getClassroomNumber(), request.getUnitName())
+                ).orElseThrow();
+
+        return l_repository.findById(request.toEntity(discipline, classRoom).getId());
+    }
+
+    @Override
+    public List<Lesson> findLessonsByDate(Date date) {
+        return l_repository.findLessonsByDate(date);
+    }
+
+    @Override
+    public Lesson updateLesson(LessonUpdRequest request) {
+        //Lesson old = l_repository.findById(request.getOldId()).orElseThrow();
+        Disciplines discipline = d_repository
+                .findById(
+                        new DisciplinesKey(request.getNewDisciplineName(), request.getNewGroupName(), request.getNewTeacherEmail())
+                ).orElseThrow();
+        ClassRoom classRoom = c_repository
+                .findById(
+                        new ClassRoomKey(request.getNewClassroomNumber(), request.getNewUnitName())
+                ).orElseThrow();
+
+        Lesson newLesson = new Lesson(request.getNewId(), classRoom, discipline);
+
+        l_repository.deleteById(request.getOldId());
+        return l_repository.save(newLesson);
+    }
+
+    @Override
+    public void deleteLesson(LessonRequest request) {
+        Lesson toDel = findLessonByID(request).orElseThrow();
+        l_repository.deleteById(toDel.getId());
+    }
+
+    @Override
+    public void deleteAllLessons() {
+        l_repository.deleteAll();
+    }
+
 }

@@ -1,6 +1,7 @@
 package _inc.studentApp.model;
 
 import _inc.studentApp.complexKeys.ClassRoomKey;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,8 +19,10 @@ public class ClassRoom {
     @ManyToOne
     @MapsId("unitName")
     @JoinColumn(name = "unit_name")
-    Unit unitName;
+    @JsonIgnore
+    Unit unit;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "classroom")
     List<Lesson> lessons = new LinkedList<>();
 }
