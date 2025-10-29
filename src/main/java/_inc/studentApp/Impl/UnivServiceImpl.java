@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Service("myPersonService")
+@Service("myUnivService")
 @AllArgsConstructor
 @Primary
 public class UnivServiceImpl implements UnivService {
@@ -154,7 +154,7 @@ public class UnivServiceImpl implements UnivService {
         Employee teacher = e_repository.findByEmail(request.getTeacherEmail())
                 .orElseThrow(() -> new EntityNotFoundException("Teacher not found"));
         Group group = g_repository.findByGroupName(request.getGroupName())
-                .orElseThrow(() -> new EntityNotFoundException("Teacher not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
 
         DisciplinesKey key = new DisciplinesKey(request.getDisciplineName(), group.getGroupName(), teacher.getEmail());
         Disciplines discipline = new Disciplines(key, request.getCountHours(), group, teacher,null);

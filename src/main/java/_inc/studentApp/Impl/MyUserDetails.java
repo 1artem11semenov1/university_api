@@ -2,8 +2,10 @@ package _inc.studentApp.Impl;
 
 import _inc.studentApp.model.User;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
@@ -31,4 +33,5 @@ public class MyUserDetails implements UserDetails {
     public String getUsername() {
         return user.getUserName();
     }
+
 }

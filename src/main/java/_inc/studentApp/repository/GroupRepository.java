@@ -15,4 +15,6 @@ public interface GroupRepository extends JpaRepository<Group, String> {
 
     @Query(value = "UPDATE groups SET group_name = :newName WHERE group_name = :oldName RETURNING *", nativeQuery = true)
     Group update (@Param("oldName") String oldName, @Param("newName") String newName);
+
+
 }

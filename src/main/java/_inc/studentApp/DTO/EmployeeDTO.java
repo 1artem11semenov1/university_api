@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Data
 @Setter
@@ -17,7 +20,7 @@ public class EmployeeDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
     private int age;
-    //private List<String> positions;
+    private List<String> positions;
     private int experience;
 
     public static EmployeeDTO fromEntity(Employee employee){
@@ -30,7 +33,7 @@ public class EmployeeDTO {
         edto.setAge(employee.getAge());
         edto.setExperience(employee.getExperience());
 
-        /*if (employee.getPositions() != null) {
+        if (employee.getPositions() != null) {
             List<String> positionsList = new ArrayList<>();
             for (Position p : employee.getPositions()) {
                 positionsList.add(p.getPositionName());
@@ -38,7 +41,7 @@ public class EmployeeDTO {
             edto.setPositions(positionsList);
         } else {
             edto.setPositions(Collections.emptyList());
-        }*/
+        }
 
         return edto;
     }
