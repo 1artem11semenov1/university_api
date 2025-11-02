@@ -47,4 +47,5 @@ public interface LessonRepository extends JpaRepository<Lesson, LessonKey> {
             " WHERE teacher_email = :inp_email"
             , nativeQuery = true)
     List<Lesson> findAllWithTeacher(@Param("inp_email") String email);
+
 }

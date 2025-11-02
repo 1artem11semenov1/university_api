@@ -76,10 +76,10 @@ public interface UnivService {
 
     // lesson methods
     List<Lesson> findAllLessons();
-    Lesson saveLesson(LessonRequest request);
+    String saveLesson(LessonRequest request);
     Optional<Lesson> findLessonByID(LessonRequest request);
     List<Lesson> findLessonsByDate(Date date);
-    Lesson updateLesson(LessonUpdRequest request);
+    String updateLesson(LessonUpdRequest request);
     void deleteLesson(LessonRequest request);
     void deleteAllLessons();
 }

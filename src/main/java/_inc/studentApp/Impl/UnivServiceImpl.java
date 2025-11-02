@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 @Service("myUnivService")
@@ -158,6 +160,7 @@ public class UnivServiceImpl implements UnivService {
 
         DisciplinesKey key = new DisciplinesKey(request.getDisciplineName(), group.getGroupName(), teacher.getEmail());
         Disciplines discipline = new Disciplines(key, request.getCountHours(), group, teacher,null);
+
         return d_repository.save(discipline);
     }
     @Override
@@ -284,7 +287,7 @@ public class UnivServiceImpl implements UnivService {
     }
 
     @Override
-    public Lesson saveLesson(LessonRequest request) {
+    public String saveLesson(LessonRequest request) {
         Disciplines discipline = d_repository
                 .findById(
                         new DisciplinesKey(
@@ -297,7 +300,16 @@ public class UnivServiceImpl implements UnivService {
                                 request.getClassroomNumber(), request.getUnitName()
                         )
                 ).orElseThrow();
-        return l_repository.save(request.toEntity(discipline, classRoom));
+
+        String isNormal = isNormalLesson(discipline, classRoom, request);
+
+        if (isNormalLessonCheckerAnswer(isNormal)) {
+            l_repository.save(request.toEntity(discipline, classRoom));
+        } else{
+            isNormal = "Lesson not added." + isNormal;
+        }
+
+        return isNormal;
     }
 
     @Override
@@ -320,8 +332,7 @@ public class UnivServiceImpl implements UnivService {
     }
 
     @Override
-    public Lesson updateLesson(LessonUpdRequest request) {
-        //Lesson old = l_repository.findById(request.getOldId()).orElseThrow();
+    public String updateLesson(LessonUpdRequest request) {
         Disciplines discipline = d_repository
                 .findById(
                         new DisciplinesKey(request.getNewDisciplineName(), request.getNewGroupName(), request.getNewTeacherEmail())
@@ -333,8 +344,28 @@ public class UnivServiceImpl implements UnivService {
 
         Lesson newLesson = new Lesson(request.getNewId(), classRoom, discipline);
 
+        String isNormal = isNormalLesson(
+                discipline,
+                classRoom,
+                new LessonRequest(
+                        request.getNewDisciplineName(),
+                        request.getNewGroupName(),
+                        request.getNewTeacherEmail(),
+                        request.getNewClassroomNumber(),
+                        request.getNewUnitName(),
+                        request.getNewDate())
+        );
+
+        Lesson tmpOld = l_repository.findById(request.getOldId()).orElseThrow();
         l_repository.deleteById(request.getOldId());
-        return l_repository.save(newLesson);
+        if (isNormalLessonCheckerAnswer(isNormal)) {
+            l_repository.save(newLesson);
+        } else {
+            l_repository.save(tmpOld);
+            isNormal = "Cannot update lesson with causes:" + isNormal;
+        }
+
+        return isNormal;
     }
 
     @Override
@@ -348,4 +379,170 @@ public class UnivServiceImpl implements UnivService {
         l_repository.deleteAll();
     }
 
+    // TODO: неправильное вычисление промежутков, получаем -N минут, исправить
+    // checker for lesson add
+    // checks that classroom, unit, count hours at week is normal and lessons is not embedded
+    private String isNormalLesson(Disciplines discipline, ClassRoom classRoom, LessonRequest request){
+        String retVal = "";
+
+        // is normal classroom capacity
+        Group group = discipline.getGroupName();
+        int countStudents = group.getStudents().size();
+        if (countStudents > classRoom.getCapacity()){
+            retVal += "\nClassroom "
+                    + classRoom.getId().getClassroomNumber()
+                    + " has insufficient capacity for group "
+                    + group.getGroupName();
+        }
+
+        // is groups intersection
+        List<Lesson> lessonsAtDate = l_repository.findLessonsByDate(request.getDate());
+        int countStudentsGlobal = countStudents;
+        int countGroups = 1;
+        for (Lesson l : lessonsAtDate){
+            if (l.getId().getDate().compareTo(request.getDate()) == 0
+                    && l.getId().getClassroom().getClassroomNumber().equals(classRoom.getId().getClassroomNumber())
+                    && !( (group.getGroupName()) .equals(l.getDiscipline().getId().getGroupName()) ) ){
+                countStudentsGlobal += l.getDiscipline().getGroupName().getStudents().size();
+                ++ countGroups;
+            }
+        }
+        if (countStudentsGlobal != countStudents){
+            retVal += "\n Classroom "
+                    + classRoom.getId().getClassroomNumber()
+                    + " has insufficient capacity for "
+                    + countGroups + " groups ";
+        }
+
+        // is normal time
+        for (Lesson l : lessonsAtDate){
+            if ( (l.getDiscipline().getId().getGroupName()) .equals(group.getGroupName())
+                && (l.getId().getDate()) .compareTo(request.getDate()) == 0 ){
+                retVal += "\n There is already a lesson for group "
+                        + group.getGroupName()
+                        + " at this time.";
+                break;
+            }
+        }
+
+        // is normal unit
+        // get all lessons for this group at this date
+        List<Lesson> lessonAtDateAddingGroup = new ArrayList<>();
+        for (Lesson l : lessonsAtDate){
+            if ( (l.getDiscipline().getId().getGroupName()) .equals(group.getGroupName()) ){
+                lessonAtDateAddingGroup.add(l);
+            }
+        }
+        // find previous lesson
+        Lesson prevLesson = getPrevious(lessonAtDateAddingGroup, request.getDate());
+        // check transfer time
+        if (prevLesson != null && !(prevLesson.getId().getClassroom().getUnitName().equals(classRoom.getId().getUnitName()))){
+            Duration timeToPrevLesson = getPositiveDuration(
+                    request.getDate().toInstant(),
+                    prevLesson.getId().getDate().toInstant()
+                    );
+
+            long minutesToPrevious = timeToPrevLesson.toMinutes() - 90; // -90 for get end of lesson
+            Distance distance = dist_repository.findById(
+                    new DistanceKey(
+                            request.getUnitName(),
+                            prevLesson.getClassroom().getUnit().getUnitName()
+                    )
+            ).orElseThrow();
+            long timeBetweenUnits = distance.getTimeMinutes();
+
+            if (timeBetweenUnits > minutesToPrevious){
+                retVal += "\nTime between units "
+                        + request.getUnitName()
+                        + " and "
+                        + prevLesson.getClassroom().getUnit().getUnitName()
+                        + " is too long. Choose other unit for this class.";
+            }
+        }
+
+
+        // is normal count hours
+        // get count hours at week
+        double countHoursAtSemester = discipline.getCountHours();
+        double countWeeksAtSemester = 16;
+        int countHoursAtWeek = Math.toIntExact(Math.round(countHoursAtSemester / countWeeksAtSemester));
+
+        // get monday and sunday
+        LocalDate curDate = request.getDate().toInstant()
+                .atZone(ZoneId.of("Europe/Moscow"))
+                .toLocalDate();
+        LocalDate startOfWeek = curDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endOfWeek = curDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        // convert LocalDate to Date
+        Date start = Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date end = Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        // get schedule for group on week
+        List<Lesson> weekSchedule = l_repository.findLessonsOnWeek(group.getGroupName(), start, end);
+
+        //get lessons with adding discipline
+        List<Lesson> addingDisciplineSchedule = new ArrayList<>();
+        for (Lesson l : weekSchedule){
+            if (l.getDiscipline().equals(discipline)){
+                addingDisciplineSchedule.add(l);
+            }
+        }
+
+        if (countHoursAtWeek > addingDisciplineSchedule.size()){
+            retVal += "\nNeed to add more classes "
+                    + discipline.getDisciplineName()
+                    + " at this week";
+        } else if (countHoursAtWeek < addingDisciplineSchedule.size()){
+            retVal += "\nProbably, you add too much classes "
+                    + discipline.getDisciplineName()
+                    + " at this week";
+        }
+
+        return retVal;
+    }
+
+    public static Duration getPositiveDuration(Instant start, Instant end) {
+        return Duration.between(
+                start.compareTo(end) <= 0 ? start : end,
+                start.compareTo(end) <= 0 ? end : start
+        );
+    }
+
+    Lesson getPrevious(List<Lesson> lessons, Date timeCur){
+        if (lessons.isEmpty()){
+            return null;
+        }
+        Instant curDateInstant = timeCur.toInstant();
+        Duration minDur = getPositiveDuration(curDateInstant, lessons.get(0).getId().getDate().toInstant());
+        boolean isFirstClass = !(timeCur.after(lessons.get(0).getId().getDate()));
+        Lesson ret = lessons.get(0);
+        for (int i = 1; i< lessons.size(); ++i){
+            Date lTime = lessons.get(i).getId().getDate();
+            Duration newDur = getPositiveDuration(curDateInstant, lTime.toInstant());
+            minDur = (minDur.compareTo(newDur) < 0) ? newDur : minDur;
+            ret = (minDur.compareTo(newDur) < 0) ? lessons.get(i) : ret;
+            if (timeCur.after(lTime)){
+                isFirstClass = false;
+            }
+        }
+
+        return ret;
+    }
+
+    boolean isNormalLessonCheckerAnswer(String answer){
+        boolean ret = false;
+        List<String> templates = new ArrayList<>();
+        templates.add("\nNeed to add more classes");
+        templates.add("\nProbably, you add too much classes");
+
+        if (answer.startsWith(templates.get(0))){
+            ret = true;
+        } else if (answer.startsWith(templates.get(1))) {
+            ret = true;
+        } else if (answer.isEmpty()){
+            ret = true;
+        }
+
+        return ret;
+    }
 }

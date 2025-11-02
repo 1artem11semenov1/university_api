@@ -240,12 +240,16 @@ public class UnivController {
     }
     @PostMapping("/save_lesson")
     public String saveLesson(@RequestBody LessonRequest request) {
-        Lesson created = service.saveLesson(request);
-        return "Lesson of " + created.getId().getDiscipline().getDisciplineName()
-                + " for group " + created.getId().getDiscipline().getGroupName()
-                + " with teacher " + created.getId().getDiscipline().getTeacherEmail()
-                + " in classroom " + created.getId().getClassroom().getClassroomNumber()
-                + " successfully saved";
+        String createLog = service.saveLesson(request);
+        if (!createLog.startsWith("Lesson not added.")) {
+            return "Lesson of " + request.getDisciplineName()
+                    + " for group " + request.getGroupName()
+                    + " with teacher " + request.getTeacherEmail()
+                    + " in classroom " + request.getClassroomNumber()
+                    + " successfully saved!\n"
+                    + createLog;
+        }
+        return createLog;
     }
     @GetMapping("/lesson_find")
     public LessonRequest findLessonById(@RequestBody LessonRequest request) {
@@ -256,10 +260,19 @@ public class UnivController {
     public List<LessonRequest> findLessonsByDate(@RequestBody DateRequest request){
         return service.findLessonsByDate(request.getDate()).stream().map(LessonRequest::fromEntity).collect(Collectors.toList());
     }
+    // TODO: добавить проверки как при добавлении
     @PutMapping("/update_lesson")
-    public LessonRequest updateLesson(@RequestBody LessonUpdRequest request) {
-        Lesson lessonUpd = service.updateLesson(request);
-        return LessonRequest.fromEntity(lessonUpd);
+    public String updateLesson(@RequestBody LessonUpdRequest request) {
+        String createLog = service.updateLesson(request);
+        if (!createLog.startsWith("Cannot update lesson with causes:")) {
+            return "Lesson of " + request.getNewDisciplineName()
+                    + " for group " + request.getNewGroupName()
+                    + " with teacher " + request.getNewTeacherEmail()
+                    + " in classroom " + request.getNewClassroomNumber()
+                    + " successfully updated!\n"
+                    + createLog;
+        }
+        return createLog;
     }
     @DeleteMapping("/delete_lesson")
     public void deleteLesson(@RequestBody LessonRequest request) {
