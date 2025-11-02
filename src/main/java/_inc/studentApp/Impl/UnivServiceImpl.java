@@ -379,7 +379,6 @@ public class UnivServiceImpl implements UnivService {
         l_repository.deleteAll();
     }
 
-    // TODO: неправильное вычисление промежутков, получаем -N минут, исправить
     // checker for lesson add
     // checks that classroom, unit, count hours at week is normal and lessons is not embedded
     private String isNormalLesson(Disciplines discipline, ClassRoom classRoom, LessonRequest request){

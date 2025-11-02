@@ -260,7 +260,6 @@ public class UnivController {
     public List<LessonRequest> findLessonsByDate(@RequestBody DateRequest request){
         return service.findLessonsByDate(request.getDate()).stream().map(LessonRequest::fromEntity).collect(Collectors.toList());
     }
-    // TODO: добавить проверки как при добавлении
     @PutMapping("/update_lesson")
     public String updateLesson(@RequestBody LessonUpdRequest request) {
         String createLog = service.updateLesson(request);
