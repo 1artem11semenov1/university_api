@@ -41,9 +41,90 @@ public class UnivServiceImpl implements UnivService {
 
     // user methods
     @Override
-    public User saveUser(User user) {
-        user.setPassword(encoder.encode(user.getPassword()));
-        return u_repository.save(user);
+    public List<User> findAllUsers(){
+        return u_repository.findAll();
+    }
+    @Override
+    public String saveUser(User user) {
+        String ret = "";
+        boolean isNormal = true;
+
+        List<String> inputRole = Arrays.stream(user.getRole().split(" ")).toList();
+        if (inputRole.contains("ROLE_ADMIN") || inputRole.contains("ROLE_TEACHER")){
+            Optional<Employee> employee = e_repository.findByEmail(user.getEmail());
+            if (employee.isPresent()){
+                user.setEmployee(employee.get());
+                List<String> positionsNames = employee.get().getPositions()
+                        .stream().map(Position::getPositionName)
+                        .toList();
+                for (String role : inputRole){
+                    if (role.equals("ROLE_ADMIN") && !positionsNames.contains("admin")){
+                        isNormal = false;
+                        break;
+                    } else if (role.equals("ROLE_TEACHER") && !positionsNames.contains("teacher")){
+                        isNormal = false;
+                        break;
+                    }
+                }
+            } else {
+                isNormal = false;
+            }
+
+            if (!isNormal){
+                ret += "\nThere is no employee "
+                        + user.getEmail()
+                        + " or the entered role does not correspond to the positions saved for this employee.";
+            }
+        }
+
+        if (inputRole.contains("ROLE_STUDENT")){
+            Student student = s_repository.findByEmail(user.getEmail());
+            if (student == null){
+                isNormal = false;
+                ret += "\nThere is no student "
+                        + user.getEmail() + ".";
+            } else {
+                user.setStudent(student);
+            }
+        }
+        if (isNormal) {
+            user.setPassword(encoder.encode(user.getPassword()));
+            u_repository.save(user);
+            ret = "User " + user.getUserName() + " successfully added.";
+        } else {
+            ret = "User " + user.getUserName() + " not added." + ret;
+        }
+        return ret;
+    }
+    @Override
+    public User findUserByUserName(String username){
+        return u_repository.findByUserName(username).orElseThrow();
+    }
+    public String updateUser(User user){
+        String ret = "";
+        Optional<User> old = u_repository.findByUserName(user.getUserName());
+        if (old.isEmpty()){
+            ret = "Can not update " + user.getUserName() + " because user not exist.";
+            return ret;
+        }
+
+        User tmp = old.get();
+        u_repository.deleteById(old.get().getUserId());
+        String saveLog = saveUser(user);
+        if (! saveLog.contains("successfully added")){
+            u_repository.save(tmp);
+            ret = "Can not update " + user.getUserName() + "\n" + saveLog;
+        }
+
+        return ret;
+    }
+    @Override
+    public void deleteUser(String username){
+        Optional<User> toDel = u_repository.findByUserName(username);
+        toDel.ifPresent(user -> u_repository.deleteById(user.getUserId()));
+    }
+    public void deleteAllUsers(){
+        u_repository.deleteAll();
     }
 
     // methods for students
@@ -96,8 +177,13 @@ public class UnivServiceImpl implements UnivService {
         return e_repository.findByEmail(email);
     }
     @Override
-    public Employee updateEmployee(Employee employee) {
-        return e_repository.save(employee);
+    public String updateEmployee(EmployeeRequest request) {
+        Optional<Employee> old = findEmployeeByEmail(request.getEmail());
+        if (old.isEmpty()){
+            return "There is no employee " + request.getEmail();
+        }
+        saveEmployee(request);
+        return "Employee " + request.getEmail() + " successfully updated.";
     }
     @Transactional
     public void deleteEmployee(String email) {

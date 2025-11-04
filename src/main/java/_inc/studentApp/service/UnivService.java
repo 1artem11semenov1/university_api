@@ -14,7 +14,12 @@ import java.util.Optional;
 public interface UnivService {
 
     // user methods
-    User saveUser(User user);
+    List<User> findAllUsers();
+    String saveUser(User user);
+    User findUserByUserName(String username);
+    String updateUser(User user);
+    void deleteUser(String username);
+    void deleteAllUsers();
 
     // student methods
     List<Student> findAllStudent();
@@ -28,7 +33,7 @@ public interface UnivService {
     Employee saveEmployee(EmployeeRequest request);
     List<Employee> findAllEmployee();
     Optional<Employee> findEmployeeByEmail(String email);
-    Employee updateEmployee(Employee employee);
+    String updateEmployee(EmployeeRequest request);
     void deleteEmployee(String email);
 
 

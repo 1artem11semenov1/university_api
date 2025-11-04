@@ -19,6 +19,6 @@ public class Position {
     @NotBlank
     private String positionName;
 
-    @ManyToMany(mappedBy = "positions")
+    @ManyToMany(mappedBy = "positions", cascade = CascadeType.ALL)
     private Set<Employee> employees = new HashSet<>();
 }
