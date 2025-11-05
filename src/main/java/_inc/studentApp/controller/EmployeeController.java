@@ -8,6 +8,7 @@ import _inc.studentApp.model.Employee;
 import _inc.studentApp.model.Group;
 import _inc.studentApp.model.Student;
 import _inc.studentApp.service.EmployeeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Tag(name = "Teachers methods")
 @RestController
 @RequestMapping("/api/v1/employee")
 @AllArgsConstructor

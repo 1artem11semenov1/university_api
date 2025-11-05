@@ -13,3 +13,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  springdoc:
+    api-docs:
+      resolve-schema-properties: true
+    swagger-ui:
+      default-models-expand-depth: -1
+      show-login-endpoint: false
