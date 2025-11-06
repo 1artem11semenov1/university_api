@@ -125,11 +125,11 @@ public class UnivController {
     public String addUser(@RequestBody User user){
         return service.saveUser(user);
     }
-    @GetMapping("/user-{uname}")
+    @GetMapping("/user/{uname}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти пользователя по юзернейму",
-            description = "Возвращает пользователя по его имени пользователя, которое берёт из пути /user-{uname}. Требует роль ADMIN.",
+            description = "Возвращает пользователя по его имени пользователя, которое берёт из пути /user/{uname}. Требует роль ADMIN.",
             tags = {"Users"},
             responses = {
                     @ApiResponse(
@@ -161,7 +161,7 @@ public class UnivController {
     public String updateUser(@RequestBody User user){
         return service.updateUser(user);
     }
-    @DeleteMapping("/delete-user-{uname}")
+    @DeleteMapping("/delete-user/{uname}")
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteByUserName(@PathVariable("uname") String username){
         service.deleteUser(username);
@@ -260,11 +260,11 @@ public class UnivController {
         service.saveStudent(student);
         return "Student " + student.getEmail() + " successfully saved";
     }
-    @GetMapping("/student-{email}")
+    @GetMapping("/student/{email}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти студента по email",
-            description = "Возвращает студента по его email, который берёт из пути /student-{email}. Требует роль ADMIN.",
+            description = "Возвращает студента по его email, который берёт из пути /student/{email}. Требует роль ADMIN.",
             tags = {"Students"},
             responses = {
                     @ApiResponse(
@@ -391,11 +391,11 @@ public class UnivController {
         Employee employee = service.saveEmployee(request);
         return "Employee " + employee.getEmail() + " successfully saved";
     }
-    @GetMapping("/employee-{email}")
+    @GetMapping("/employee/{email}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти сотрудника по email",
-            description = "Возвращает сотрудника по его email, который берёт из пути /employee-{email}. Требует роль ADMIN.",
+            description = "Возвращает сотрудника по его email, который берёт из пути /employee/{email}. Требует роль ADMIN.",
             tags = {"Employees"},
             responses = {
                     @ApiResponse(
@@ -515,11 +515,11 @@ public class UnivController {
         service.saveGroup(group);
         return "Group " + group.getGroupName() + " successfully saved";
     }
-    @GetMapping("/group-{name}")
+    @GetMapping("/group/{name}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти учебную группу по названию",
-            description = "Возвращает учебную группу по её названию, которое берёт из пути /group-{name}. Требует роль ADMIN.",
+            description = "Возвращает учебную группу по её названию, которое берёт из пути /group/{name}. Требует роль ADMIN.",
             tags = {"Groups"},
             responses = {
                     @ApiResponse(
@@ -640,11 +640,11 @@ public class UnivController {
         service.savePosition(position);
         return "Position " + position.getPositionName() + " successfully saved";
     }
-    @GetMapping("/position-{name}")
+    @GetMapping("/position/{name}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти должность по её названию",
-            description = "Возвращает должность по её названию, которое берёт из пути /position-{name}. Требует роль ADMIN.",
+            description = "Возвращает должность по её названию, которое берёт из пути /position/{name}. Требует роль ADMIN.",
             tags = {"Positions"},
             responses = {
                     @ApiResponse(
@@ -768,7 +768,7 @@ public class UnivController {
         Disciplines created = service.saveDiscipline(request);
         return "Discipline " + created.getDisciplineName() + " successfully saved";
     }
-    @GetMapping("/discipline_find_{name}_{group}_{temail}")
+    @GetMapping("/discipline_find/{name}/{group}/{temail}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти дисциплину по ключу",
@@ -810,10 +810,14 @@ public class UnivController {
         Disciplines disciplineUpd = service.updateDiscipline(request);
         return DisciplineDTO.fromEntity(disciplineUpd);
     }
-    @DeleteMapping("/delete_discipline")
+    @DeleteMapping("/delete_discipline/{name}/{group}/{teacher}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteDiscipline(@RequestBody DisciplineRequest request) {
-        service.deleteDiscipline(request);
+    public void deleteDiscipline(@PathVariable("name") String disciplineName,
+                                 @PathVariable("group") String groupName,
+                                 @PathVariable("teacher") String teacherEmail)
+    {
+        DisciplinesKey key = new DisciplinesKey(disciplineName, groupName, teacherEmail);
+        service.deleteDiscipline(key);
     }
 
     // units methods
@@ -899,11 +903,11 @@ public class UnivController {
         service.saveUnit(unit);
         return "Unit " + unit.getUnitName() + " at address " + unit.getAddress() + " successfully saved";
     }
-    @GetMapping("/unit-{name}")
+    @GetMapping("/unit/{name}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти подразделение ВУЗа его названию",
-            description = "Возвращает подразделение по его названию, которое берёт из пути /unit-{name}. Требует роль ADMIN.",
+            description = "Возвращает подразделение по его названию, которое берёт из пути /unit/{name}. Требует роль ADMIN.",
             tags = {"Units"},
             responses = {
                     @ApiResponse(
@@ -1025,7 +1029,7 @@ public class UnivController {
         ClassRoom created = service.saveClassRoom(request);
         return "ClassRoom " + created.getId().getClassroomNumber() + " in unit " + created.getId().getUnitName() + " successfully saved";
     }
-    @GetMapping("/classroom_find_{number}_{unit}")
+    @GetMapping("/classroom_find/{number}/{unit}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти аудиторию по ключу",
@@ -1066,9 +1070,12 @@ public class UnivController {
         ClassRoom classRoomUpd = service.updateClassRoom(request);
         return ClassRoomRequest.fromEntity(classRoomUpd);
     }
-    @DeleteMapping("/delete_classroom")
+    @DeleteMapping("/delete_classroom/{number}/{unit}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteClassRoom(@RequestBody ClassRoomKey key) {
+    public void deleteClassRoom(@PathVariable("number") String number,
+                                @PathVariable("unit") String unitName)
+    {
+        ClassRoomKey key = new ClassRoomKey(number, unitName);
         service.deleteClassRoom(key);
     }
 
@@ -1156,7 +1163,7 @@ public class UnivController {
         Distance created = service.saveDistance(request);
         return "Distance from " + created.getId().getUnitFrom() + " to " + created.getId().getUnitTo() + " successfully saved";
     }
-    @GetMapping("/distance_find_{from}_{to}")
+    @GetMapping("/distance_find/{from}/{to}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти дистанцию по ключу",
@@ -1196,9 +1203,12 @@ public class UnivController {
         Distance distUpd = service.updateDistance(request);
         return DistanceRequest.fromEntity(distUpd);
     }
-    @DeleteMapping("/delete_distance")
+    @DeleteMapping("/delete_distance/{from}/{to}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteDistance(@RequestBody DistanceKey key) {
+    public void deleteDistance(@PathVariable("from") String unitFrom,
+                               @PathVariable("to") String unitTo)
+    {
+        DistanceKey key = new DistanceKey(unitFrom, unitTo);
         service.deleteDistance(key);
     }
 
@@ -1310,12 +1320,12 @@ public class UnivController {
         }
         return createLog;
     }
-    @GetMapping("/lesson_find_{discipline}_{group}_{teacher}_{number}_{unit}_{date}")
+    @GetMapping("/lesson_find/{discipline}/{group}/{teacher}/{number}/{unit}/{date}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти занятие по ключу",
             description = "Поиск занятия по составному ключу (дисциплина, группа, email преподавателя, номер класса, название подразделения, дата проведения), который берёт из пути. Требует роль ADMIN."
-            +"\nпример: localhost:8080/api/v1/lesson_find_math_23.Б11-ПУ_Mac63@yahoo.com_212Д_AM-CP faculty_2025-10-22T09:30:00.000+03:00",
+            +"\nпример: localhost:8080/api/v1/lesson_find/math/23.Б11-ПУ/Mac63@yahoo.com/212Д/AM-CP faculty/2025-10-22T09:30:00.000+03:00",
             tags = {"Schedule"},
             responses = {
                     @ApiResponse(
@@ -1363,12 +1373,12 @@ public class UnivController {
         Lesson lesson = service.findLessonByID(request).orElseThrow(() -> new EntityNotFoundException("Lesson not found"));
         return LessonRequest.fromEntity(lesson);
     }
-    @GetMapping("/find_lesson_ondate_{date}")
+    @GetMapping("/find_lesson_ondate/{date}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти занятия по дате",
             description = "Поиск списка занятий по дате проведения, которая берётся из пути. Требует роль ADMIN."
-                    +"\nпример: localhost:8080/api/v1/find_lesson_ondate_2025-10-22",
+                    +"\nпример: localhost:8080/api/v1/find_lesson_ondate/2025-10-22",
             tags = {"Schedule"},
             responses = {
                     @ApiResponse(
@@ -1418,9 +1428,29 @@ public class UnivController {
         }
         return createLog;
     }
-    @DeleteMapping("/delete_lesson")
+    @DeleteMapping("/delete_lesson/{discipline}/{group}/{teacher}/{number}/{unit}/{date}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteLesson(@RequestBody LessonRequest request) {
+    public void deleteLesson(@PathVariable("discipline") String disciplineName,
+                             @PathVariable("group") String groupName,
+                             @PathVariable("teacher") String teacherEmail,
+                             @PathVariable("number") String classRoom,
+                             @PathVariable("unit") String unitName,
+                             @PathVariable("date") String date)
+    {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        Date d;
+        try {
+            d = format.parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        LessonRequest request = new LessonRequest(disciplineName,
+                groupName,
+                teacherEmail,
+                classRoom,
+                unitName,
+                d
+        );
         service.deleteLesson(request);
     }
     @DeleteMapping("/delete_all_lessons")
@@ -1430,3 +1460,6 @@ public class UnivController {
     }
 
 }
+/*
+add documentation for other get methods from univ controller (admin methods).
+*/

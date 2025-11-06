@@ -56,7 +56,7 @@ public interface UnivService {
     List<Disciplines> findAllDisciplines();
     Optional<Disciplines> findByDisciplineKey(DisciplinesKey dk);
     Disciplines updateDiscipline(DisciplineUpdRequest request);
-    void deleteDiscipline(DisciplineRequest request);
+    void deleteDiscipline(DisciplinesKey key);
 
     // unit methods
     List<Unit> findAllUnits();

@@ -267,13 +267,14 @@ public class UnivServiceImpl implements UnivService {
         );
         return saveDiscipline(newDisciplineRequest);
     }
+    @Override
     @Transactional
-    public void deleteDiscipline(DisciplineRequest request) {
-        DisciplinesKey dk = new DisciplinesKey(request.getDisciplineName(), request.getGroupName(), request.getTeacherEmail());
-        d_repository.deleteById(dk);
+    public void deleteDiscipline(DisciplinesKey key) {
+        d_repository.deleteById(key);
     }
 
     // methods for units
+    @Override
     public List<Unit> findAllUnits() {
         return un_repository.findAll();
     }
