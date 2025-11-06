@@ -21,6 +21,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -70,7 +72,12 @@ public class UnivController {
     @PostMapping("/new-user")
     @Operation(
             summary = "Регистрация пользователя",
-            description = "Создает нового пользователя или обновляет существующего. Не требуется роль.",
+            description = """
+                    Создает нового пользователя или обновляет существующего. Не требуется роль.
+                    Список проверок при добавлении:
+                    - проверка на существование в таблицах со студентами и/или сотрудниками
+                    - соответствие указанной роли должностям, сохраненным в БД.
+                    """,
             tags = {"Users"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные пользователя для сохранения",
@@ -120,6 +127,32 @@ public class UnivController {
     }
     @GetMapping("/user-{uname}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Найти пользователя по юзернейму",
+            description = "Возвращает пользователя по его имени пользователя, которое берёт из пути /user-{uname}. Требует роль ADMIN.",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Пользователь найден",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или пользователь не найден",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public User findUserByUserName(@PathVariable("uname") String username){
         return service.findUserByUserName(username);
     }
@@ -171,7 +204,6 @@ public class UnivController {
     public List<StudentDTO> findAllStudent(){
         return service.findAllStudent().stream().map(StudentDTO::fromEntity).collect(Collectors.toList());
     }
-
     @PostMapping("/save_student")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
@@ -230,6 +262,32 @@ public class UnivController {
     }
     @GetMapping("/student-{email}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Найти студента по email",
+            description = "Возвращает студента по его email, который берёт из пути /student-{email}. Требует роль ADMIN.",
+            tags = {"Students"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Студент найден",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = StudentDTO.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или студент не найден",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public StudentDTO findStudentByEmail(@PathVariable("email") String email) {
         return StudentDTO.fromEntity(service.findStudentByEmail(email));
     }
@@ -335,6 +393,32 @@ public class UnivController {
     }
     @GetMapping("/employee-{email}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Найти сотрудника по email",
+            description = "Возвращает сотрудника по его email, который берёт из пути /employee-{email}. Требует роль ADMIN.",
+            tags = {"Employees"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Сотрудник найден",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = Employee.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public Optional<Employee> findEmployeeByEmail(@PathVariable("email") String email) {
         return service.findEmployeeByEmail(email);
     }
@@ -433,6 +517,32 @@ public class UnivController {
     }
     @GetMapping("/group-{name}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Найти учебную группу по названию",
+            description = "Возвращает учебную группу по её названию, которое берёт из пути /group-{name}. Требует роль ADMIN.",
+            tags = {"Groups"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Группа найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = Group.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public Optional<Group> findGroupByName(@PathVariable("name") String name) {
         return service.findByGroupName(name);
     }
@@ -532,6 +642,32 @@ public class UnivController {
     }
     @GetMapping("/position-{name}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Найти должность по её названию",
+            description = "Возвращает должность по её названию, которое берёт из пути /position-{name}. Требует роль ADMIN.",
+            tags = {"Positions"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Должность найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = Position.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public Optional<Position> findPositionByName(@PathVariable("name") String name) {
         return service.findByPositionName(name);
     }
@@ -632,9 +768,39 @@ public class UnivController {
         Disciplines created = service.saveDiscipline(request);
         return "Discipline " + created.getDisciplineName() + " successfully saved";
     }
-    @GetMapping("/discipline_find")
+    @GetMapping("/discipline_find_{name}_{group}_{temail}")
     @PreAuthorize("hasRole('ADMIN')")
-    public DisciplineDTO findDisciplineByName(@RequestBody DisciplinesKey dk) {
+    @Operation(
+            summary = "Найти дисциплину по ключу",
+            description = "Поиск дисциплины по составному ключу (название, группа, email преподавателя), который берёт из пути. Требует роль ADMIN.",
+            tags = {"Disciplines"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Дисциплина найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = DisciplineDTO.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN), данные не корректны или дисциплина не найдена",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public DisciplineDTO findDisciplineByName(@PathVariable("name") String disciplineName,
+                                              @PathVariable("group") String groupName,
+                                              @PathVariable("temail") String teacherEmail)
+    {
+        DisciplinesKey dk = new DisciplinesKey(disciplineName, groupName, teacherEmail);
         Disciplines discipline = service.findByDisciplineKey(dk).orElseThrow(() -> new EntityNotFoundException("Discipline not found"));
         return DisciplineDTO.fromEntity(discipline);
     }
@@ -735,6 +901,32 @@ public class UnivController {
     }
     @GetMapping("/unit-{name}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Найти подразделение ВУЗа его названию",
+            description = "Возвращает подразделение по его названию, которое берёт из пути /unit-{name}. Требует роль ADMIN.",
+            tags = {"Units"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Подразделение найдено",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = Unit.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public Optional<Unit> findUnitByName(@PathVariable("name") String name) {
         return service.findUnitByName(name);
     }
@@ -833,9 +1025,38 @@ public class UnivController {
         ClassRoom created = service.saveClassRoom(request);
         return "ClassRoom " + created.getId().getClassroomNumber() + " in unit " + created.getId().getUnitName() + " successfully saved";
     }
-    @GetMapping("/classroom_find")
+    @GetMapping("/classroom_find_{number}_{unit}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ClassRoomRequest findClassRoomById(@RequestBody ClassRoomKey key) {
+    @Operation(
+            summary = "Найти аудиторию по ключу",
+            description = "Поиск аудитории по составному ключу (номер аудитории, название подразделения), который берёт из пути. Требует роль ADMIN.",
+            tags = {"Classrooms"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Аудитория найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ClassRoomRequest.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN), данные не корректны или аудитория не найдена",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public ClassRoomRequest findClassRoomById(@PathVariable("number") String classroomNumber,
+                                              @PathVariable("unit") String unitName)
+    {
+        ClassRoomKey key = new ClassRoomKey(classroomNumber, unitName);
         ClassRoom classRoom = service.findClassRoomByID(key).orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
         return ClassRoomRequest.fromEntity(classRoom);
     }
@@ -935,9 +1156,37 @@ public class UnivController {
         Distance created = service.saveDistance(request);
         return "Distance from " + created.getId().getUnitFrom() + " to " + created.getId().getUnitTo() + " successfully saved";
     }
-    @GetMapping("/distance_find")
+    @GetMapping("/distance_find_{from}_{to}")
     @PreAuthorize("hasRole('ADMIN')")
-    public DistanceRequest findDistanceById(@RequestBody DistanceKey key) {
+    @Operation(
+            summary = "Найти дистанцию по ключу",
+            description = "Поиск дистанции (в минутах) между двумя подразделениями по составному ключу (подразделение А, подразделение В), который берёт из пути. Требует роль ADMIN.",
+            tags = {"Distances"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Дистанция найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = DistanceRequest.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN), данные не корректны или дистанция не найдена",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public DistanceRequest findDistanceById(@PathVariable("from") String unitFrom,
+                                            @PathVariable("to") String unitTo) {
+        DistanceKey key = new DistanceKey(unitFrom,unitTo);
         Distance dist = service.findDistanceByID(key).orElseThrow(() -> new EntityNotFoundException("Distance not found"));
         return DistanceRequest.fromEntity(dist);
     }
@@ -989,7 +1238,15 @@ public class UnivController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Добавить занятие",
-            description = "Создает новое занятие или обновляет существующее. Требует роль ADMIN.",
+            description = """
+                    Создает новое занятие или обновляет существующее. Требует роль ADMIN.
+                    Список провеок:
+                    - Корректность аудитории. Проверяется, что аудитория, в которой ставится занятие, может вместить всю группу, у которой ставится занятие.
+                    - Проверка пересечения групп. Если ставится занятие у нескольких групп, также проверяется вместимость аудитории.
+                    - Корректность времени. Проверяется, что занятие не ставится на то же время, на которое уже стоит занятие у той же группы.
+                    - Проверка корректности подразделения. Администратор не сможет поставить соседние занятия в подразделениях вуза, путь между которыми занимает более, чем время между занятиями.
+                    - Количество часов. В случае, если количество часов, рассчитанных программой на неделю, исходя из сохраненного в базе количества часов на семестр будет меньше/больше того, что администратор добавил - программа будет высвечивать предупреждение.
+                    """,
             tags = {"Schedule"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные занятия для сохранения",
@@ -1053,15 +1310,98 @@ public class UnivController {
         }
         return createLog;
     }
-    @GetMapping("/lesson_find")
+    @GetMapping("/lesson_find_{discipline}_{group}_{teacher}_{number}_{unit}_{date}")
     @PreAuthorize("hasRole('ADMIN')")
-    public LessonRequest findLessonById(@RequestBody LessonRequest request) {
+    @Operation(
+            summary = "Найти занятие по ключу",
+            description = "Поиск занятия по составному ключу (дисциплина, группа, email преподавателя, номер класса, название подразделения, дата проведения), который берёт из пути. Требует роль ADMIN."
+            +"\nпример: localhost:8080/api/v1/lesson_find_math_23.Б11-ПУ_Mac63@yahoo.com_212Д_AM-CP faculty_2025-10-22T09:30:00.000+03:00",
+            tags = {"Schedule"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Занятие найдено",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = LessonRequest.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN), данные не корректны или занятие не найдено",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public LessonRequest findLessonById(@PathVariable("discipline") String disciplineName,
+                                        @PathVariable("group") String groupName,
+                                        @PathVariable("teacher") String teacherEmail,
+                                        @PathVariable("number") String classRoom,
+                                        @PathVariable("unit") String unitName,
+                                        @PathVariable("date") String date)
+    {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        Date d;
+        try {
+            d = format.parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        LessonRequest request = new LessonRequest(disciplineName,
+                groupName,
+                teacherEmail,
+                classRoom,
+                unitName,
+                d
+        );
         Lesson lesson = service.findLessonByID(request).orElseThrow(() -> new EntityNotFoundException("Lesson not found"));
         return LessonRequest.fromEntity(lesson);
     }
-    @GetMapping("/find_lesson_ondate")
+    @GetMapping("/find_lesson_ondate_{date}")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<LessonRequest> findLessonsByDate(@RequestBody DateRequest request){
+    @Operation(
+            summary = "Найти занятия по дате",
+            description = "Поиск списка занятий по дате проведения, которая берётся из пути. Требует роль ADMIN."
+                    +"\nпример: localhost:8080/api/v1/find_lesson_ondate_2025-10-22",
+            tags = {"Schedule"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Занятия найдено",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = LessonRequest.class))
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN), данные не корректны",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public List<LessonRequest> findLessonsByDate(@PathVariable("date") String date){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date d;
+        try {
+            d = format.parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        DateRequest request = new DateRequest();
+        request.setDate(d);
         return service.findLessonsByDate(request.getDate()).stream().map(LessonRequest::fromEntity).collect(Collectors.toList());
     }
     @PutMapping("/update_lesson")
