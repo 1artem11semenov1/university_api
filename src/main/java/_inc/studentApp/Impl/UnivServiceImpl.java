@@ -133,6 +133,7 @@ public class UnivServiceImpl implements UnivService {
     }
     @Override
     public Student saveStudent(Student student) {
+
         return s_repository.save(student);
     }
     @Override
@@ -140,8 +141,14 @@ public class UnivServiceImpl implements UnivService {
         return s_repository.findByEmail(email);
     }
     @Override
-    public Student updateStudent(Student student) {
-        return s_repository.save(student);
+    public String updateStudent(Student student) {
+        Student old = s_repository.findByEmail(student.getEmail());
+        if (old == null){
+            return "There is no student " + student.getEmail();
+        }
+
+        s_repository.save(student);
+        return "Student " + student.getEmail() + " successfully updated";
     }
     @Transactional
     public void deleteStudent(String email) {
@@ -203,8 +210,14 @@ public class UnivServiceImpl implements UnivService {
         return p_repository.findByPositionName(positionName);
     }
     @Override
-    public Position updatePosition(Position position) {
-        return p_repository.save(position);
+    public String updatePosition(String name, String newName) {
+        Optional<Position> old = p_repository.findByPositionName(name);
+        if (old.isEmpty()){
+            return "There is no position " + name;
+        }
+        old.get().setPositionName(newName);
+        p_repository.save(old.get());
+        return "Position " + name + " successfully updated to " + newName;
     }
     @Transactional
     public void deletePosition(Long id) {
@@ -252,20 +265,38 @@ public class UnivServiceImpl implements UnivService {
     @Override
     public Optional<Disciplines> findByDisciplineKey(DisciplinesKey dk){ return d_repository.findById(dk); }
     @Override
-    public Disciplines updateDiscipline(DisciplineUpdRequest request) {
-        DisciplinesKey old = new DisciplinesKey(
+    public String updateDiscipline(DisciplineUpdRequest request) {
+        DisciplinesKey oldKey = new DisciplinesKey(
                 request.getDisciplineName(),
                 request.getGroupName(),
                 request.getTeacherEmail()
         );
-        d_repository.deleteById(old);
-        DisciplineRequest newDisciplineRequest = new DisciplineRequest(
+        Optional<Disciplines> old = d_repository.findById(oldKey);
+        if (old.isEmpty()){
+            return "There is no discipline " + request.getDisciplineName();
+        }
+        Optional<Group> newGroup = g_repository.findByGroupName(request.getGroupName());
+        Optional<Employee> newTeacher = e_repository.findByEmail(request.getNewTeacherEmail());
+        if (newTeacher.isEmpty() || newGroup.isEmpty()){
+            String log = "";
+            if (newTeacher.isEmpty()){
+                log += "Can not update. Teacher " + request.getNewTeacherEmail() + " not exist ";
+            }
+            if (newGroup.isEmpty()){
+                log += "Can not update. Group " + request.getNewGroupName() + " not exist";
+            }
+        }
+        Disciplines newDis = d_repository.update(
+                request.getDisciplineName(),
+                request.getGroupName(),
+                request.getTeacherEmail(),
                 request.getNewDisciplineName(),
                 request.getNewGroupName(),
                 request.getNewTeacherEmail(),
                 request.getNewCountHours()
         );
-        return saveDiscipline(newDisciplineRequest);
+
+        return "Successfully update discipline " + newDis.getDisciplineName();
     }
     @Override
     @Transactional
@@ -287,17 +318,20 @@ public class UnivServiceImpl implements UnivService {
         return un_repository.findById(unitName);
     }
     @Override
-    public Unit updateUnit(UnitUpdRequest request) {
-        Unit old = un_repository.findById(request.getOldName()).orElseThrow();
-        List<ClassRoom> classRooms = old.getClassrooms();
-        List<Distance> distances = old.getDistances();
-        un_repository.deleteById(request.getOldName());
-        Unit newUnit = new Unit();
-        newUnit.setUnitName(request.getNewName());
-        newUnit.setAddress(request.getNewAddress());
-        newUnit.setClassrooms(classRooms);
-        newUnit.setDistances(distances);
-        return un_repository.save(newUnit);
+    public String updateUnit(UnitUpdRequest request) {
+        Optional<Unit> old = un_repository.findById(request.getOldName());
+        if (old.isEmpty()){
+            return "There is no unit " + request.getOldName();
+        }
+        un_repository.update(
+                request.getOldName(),
+                request.getNewName(),
+                request.getNewAddress()
+        );
+
+        return "Successfully update unit " + request.getOldName()
+                + " to name " + request.getNewName()
+                + " at address " + request.getNewAddress();
     }
     @Transactional
     public void deleteUnit(String unitName) {
@@ -321,15 +355,27 @@ public class UnivServiceImpl implements UnivService {
         return c_repository.findById(id);
     }
     @Override
-    public ClassRoom updateClassRoom(ClassRoomUpdRequest request) {
-        ClassRoom newClassRoom = new ClassRoom();
-        ClassRoomKey key = new ClassRoomKey(request.getNewNumber(), request.getOld().getUnitName());
-        Unit unit = un_repository.findById(request.getOld().getUnitName()).orElseThrow();
-        newClassRoom.setId(key);
+    public String updateClassRoom(ClassRoomUpdRequest request) {
+        /*ClassRoom newClassRoom = new ClassRoom();*/
+        /*newClassRoom.setId(key);
         newClassRoom.setCapacity(request.getNewCapacity());
         newClassRoom.setUnit(unit);
         c_repository.deleteById(request.getOld());
-        return c_repository.save(newClassRoom);
+        c_repository.save(newClassRoom);*/
+
+        ClassRoomKey key = new ClassRoomKey(request.getOld().getClassroomNumber(), request.getOld().getUnitName());
+        Optional<ClassRoom> old = c_repository.findById(key);
+        if (old.isEmpty()){
+            return "There is no classroom " + key.getClassroomNumber() + " in unit " + key.getUnitName();
+        }
+
+        c_repository.update(
+                key.getUnitName(),
+                request.getOld().getClassroomNumber(),
+                request.getNewNumber(),
+                request.getNewCapacity()
+        );
+        return "Classroom " + request.getNewNumber() + " successfully update";
     }
     @Transactional
     public void deleteClassRoom(ClassRoomKey id) {
@@ -357,7 +403,19 @@ public class UnivServiceImpl implements UnivService {
         return dist_repository.findById(id);
     }
     @Override
-    public Distance updateDistance(DistanceRequest request) { return saveDistance(request); }
+    public String updateDistance(DistanceRequest request) {
+        Optional<Unit> unitF = un_repository.findById(request.getUnitFrom());
+        if (unitF.isEmpty()){
+            return "There is no unit " + request.getUnitFrom();
+        }
+        Optional<Unit> unitT = un_repository.findById(request.getUnitTo());
+        if (unitT.isEmpty()){
+            return "There is no unit " + request.getUnitTo();
+        }
+
+        saveDistance(request);
+        return "Distance from " + request.getUnitFrom() + " to " + request.getUnitTo() + " successfully updated";
+    }
     @Transactional
     public void deleteDistance(DistanceKey id) {
         // delete main

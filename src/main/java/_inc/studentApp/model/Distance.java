@@ -20,4 +20,10 @@ public class Distance {
     @JoinColumn(name = "unit_from")
     @JsonIgnore
     Unit unitF;
+
+    @ManyToOne
+    @MapsId("unitTo")
+    @JoinColumn(name = "unit_to")
+    @JsonIgnore
+    Unit unitT;
 }

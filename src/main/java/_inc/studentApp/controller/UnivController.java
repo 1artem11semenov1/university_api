@@ -158,6 +158,60 @@ public class UnivController {
     }
     @PutMapping("/update-user")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Обновить данные пользователя",
+            description = "Обновляет уже добавленного ранее пользователя. Требует роль ADMIN. При обновлении осуществляются те же проверки, что при добавлении.",
+            tags = {"Users"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные пользователя для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LessonUpdRequest.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                  "userName" : "math teacher",
+                                                  "password":"223",
+                                                  "email": "Mac63@yahoo.com",
+                                                  "role":"ROLE_TEACHER"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Пользователь успешно обновлен или новые параметры не прошли проверки",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    User <user_name> successfully added
+                                                    ---------Вариант 2---------
+                                                    Can not update <user_name> because user not exist.
+                                                    ---------Вариант 3---------
+                                                    User <user_name> not added. <причины>
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public String updateUser(@RequestBody User user){
         return service.updateUser(user);
     }
@@ -293,8 +347,63 @@ public class UnivController {
     }
     @PutMapping("/update_student")
     @PreAuthorize("hasRole('ADMIN')")
-    public StudentDTO updateStudent(@RequestBody Student student) {
-        return StudentDTO.fromEntity(service.updateStudent(student));
+    @Operation(
+            summary = "Обновить данные студента",
+            description = "Обновляет уже существующего студента. Требует роль ADMIN.",
+            tags = {"Students"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные студента для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Student.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                 "email": "test@gmail.com",
+                                                 "firstName": "newName",
+                                                 "lastName": "sName",
+                                                 "dateOfBirth": "2006-03-18",
+                                                 "group":{"groupName":"23.Б11-ПУ"},
+                                                 "level": "bac",
+                                                 "enterYear": "2023"
+                                             }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Студент успешно обновлён или такой студент не существует",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Student test@gmail.com successfully updated.
+                                                    ---------Вариант 2---------
+                                                    There is no student test@gmail.com.
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public String updateStudent(@RequestBody Student student) {
+        return service.updateStudent(student);
     }
 
     @DeleteMapping("/delete_student/{email}")
@@ -424,6 +533,60 @@ public class UnivController {
     }
     @PutMapping("/update_employee")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Обновить данные сотрудника",
+            description = "Обновляет уже существующего сотрудника. Требует роль ADMIN.",
+            tags = {"Employees"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные сотрудника для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = EmployeeRequest.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                  "firstName":"newName",
+                                                  "lastName":"sName",
+                                                  "dateOfBirth":"1970-01-01",
+                                                  "email":"teacherTest@gmail.com",
+                                                  "experience":30,
+                                                  "positions": ["teacher", "admin"]
+                                              }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Сотрудник успешно обновлён или такой сотрудник не существует",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Employee test@gmail.com successfully updated.
+                                                    ---------Вариант 2---------
+                                                    There is no employee test@gmail.com.
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public String updateEmployee(@RequestBody EmployeeRequest request) {
         return service.updateEmployee(request);
     }
@@ -548,6 +711,39 @@ public class UnivController {
     }
     @PutMapping("/update_group/{name}/{newName}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Обновить данные учебной группы",
+            description = "Обновляет уже существующего группу. Требует роль ADMIN.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Группа успешно обновлена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = Group.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                            {
+                                                "groupName" : "23.Б11-ПУ"
+                                            }
+                                            """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN), введенные данные некорректны",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public Group updateGroup(@PathVariable("name") String name, @PathVariable("newName") String newName) {
         return service.updateGroup(name, newName);
     }
@@ -671,10 +867,45 @@ public class UnivController {
     public Optional<Position> findPositionByName(@PathVariable("name") String name) {
         return service.findByPositionName(name);
     }
-    @PutMapping("/update_position")
+    @PutMapping("/update_position_{name}_{newName}")
     @PreAuthorize("hasRole('ADMIN')")
-    public Position updatePosition(@RequestBody Position position) {
-        return service.updatePosition(position);
+    @Operation(
+            summary = "Обновить название должности",
+            description = "Обновляет уже существующую должность. Требует роль ADMIN.",
+            tags = {"Positions"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Должность успешно обновлена или такой должности не существует",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Employee name successfully updated to newName.
+                                                    ---------Вариант 2---------
+                                                    There is no position name.
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public String updatePosition(@PathVariable("name") String name,
+                                 @PathVariable("newName") String newName) {
+        return service.updatePosition(name, newName);
     }
     @DeleteMapping("/delete_position/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -806,9 +1037,68 @@ public class UnivController {
     }
     @PutMapping("/update_discipline")
     @PreAuthorize("hasRole('ADMIN')")
-    public DisciplineDTO updateDiscipline(@RequestBody DisciplineUpdRequest request) {
-        Disciplines disciplineUpd = service.updateDiscipline(request);
-        return DisciplineDTO.fromEntity(disciplineUpd);
+    @Operation(
+            summary = "Обновить данные учебной дисциплины",
+            description = "Обновляет уже существующую дисциплину. Требует роль ADMIN.",
+            tags = {"Disciplines"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные дисциплины для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DisciplineUpdRequest.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "disciplineName": "programming",
+                                              "groupName": "23.Б11-ПУ",
+                                              "teacherEmail": "Karen_Pagac75@yahoo.com",
+                                              "countHours": 100,
+                                              "newDisciplineName": "PROGRAMMING TEST",
+                                              "newGroupName": "23.Б11-ПУ",
+                                              "newTeacherEmail": "Karen_Pagac75@yahoo.com",
+                                              "newCountHours": 100
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Дисциплина успешно обновлена или такой дисциплины не существует, не существует сотрудника или группы на которых она пытается сослаться при обновлении",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Successfully update discipline PROGRAMMING TEST
+                                                    ---------Вариант 2---------
+                                                    There is no discipline <имя дисциплины, пытаются обновить>
+                                                    ---------Вариант 3---------
+                                                    Can not update. Teacher <teacher_email> not exist
+                                                    ---------Вариант 4---------
+                                                    Can not update. Group <group_name> not exist
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public String updateDiscipline(@RequestBody DisciplineUpdRequest request) {
+        return service.updateDiscipline(request);
     }
     @DeleteMapping("/delete_discipline/{name}/{group}/{teacher}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -936,7 +1226,58 @@ public class UnivController {
     }
     @PutMapping("/update_unit")
     @PreAuthorize("hasRole('ADMIN')")
-    public Unit updateUnit(@RequestBody UnitUpdRequest request) {
+    @Operation(
+            summary = "Обновить данные подразделения ВУЗа",
+            description = "Обновляет уже существующее подразделение. Требует роль ADMIN.",
+            tags = {"Units"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные подразделения для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UnitUpdRequest.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "oldName": "AM-CP faculty",
+                                              "newName": "AM-CP faculty TEST",
+                                              "newAddress": "test address"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Подразделение успешно обновлено или такого подразделения не существует",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Successfully update unit <oldName> to name <newName> at address <newAddress>
+                                                    ---------Вариант 2---------
+                                                    There is no unit <имя подразделения>, которое пытаются обновить>
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public String updateUnit(@RequestBody UnitUpdRequest request) {
         return service.updateUnit(request);
     }
     @DeleteMapping("/delete_unit/{name}")
@@ -1066,9 +1407,60 @@ public class UnivController {
     }
     @PutMapping("/update_classroom")
     @PreAuthorize("hasRole('ADMIN')")
-    public ClassRoomRequest updateClassRoom(@RequestBody ClassRoomUpdRequest request) {
-        ClassRoom classRoomUpd = service.updateClassRoom(request);
-        return ClassRoomRequest.fromEntity(classRoomUpd);
+    @Operation(
+            summary = "Обновить данные аудитории",
+            description = "Обновляет уже существующую аудиторию. Требует роль ADMIN.",
+            tags = {"ClassRooms"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные аудитории для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ClassRoomUpdRequest.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                "old" : {"classroomNumber":"test aud",
+                                                        "unitName":"Central unit"},
+                                                "newNumber" : "test aud 1",
+                                                "newCapacity" : 20
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Аудитория успешно обновлена или такой аудитории не существует",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Successfully update classroom <newNumber>
+                                                    ---------Вариант 2---------
+                                                    There is no classroom <old number> in unit <unit name>
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public String updateClassRoom(@RequestBody ClassRoomUpdRequest request) {
+        return service.updateClassRoom(request);
     }
     @DeleteMapping("/delete_classroom/{number}/{unit}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -1199,9 +1591,59 @@ public class UnivController {
     }
     @PutMapping("/update_distance")
     @PreAuthorize("hasRole('ADMIN')")
-    public DistanceRequest updateDistance(@RequestBody DistanceRequest request) {
-        Distance distUpd = service.updateDistance(request);
-        return DistanceRequest.fromEntity(distUpd);
+    @Operation(
+            summary = "Обновить дистанцию между подразделениями",
+            description = "Обновляет уже существующую дистанцию. Требует роль ADMIN.",
+            tags = {"Distances"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные дистанции для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DistanceRequest.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                "unitFrom" : "AM-CP faculty",
+                                                "unitTo" : "Central unit",
+                                                "time" : 95
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Дистанция успешно обновлена или таких подразделений не существует",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Successfully update distance from <unitFrom> to <unitTo>
+                                                    ---------Вариант 2---------
+                                                    There is no unit <unitFrom/unitTo>
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public String updateDistance(@RequestBody DistanceRequest request) {
+        return service.updateDistance(request);
     }
     @DeleteMapping("/delete_distance/{from}/{to}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -1416,6 +1858,66 @@ public class UnivController {
     }
     @PutMapping("/update_lesson")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Обновить данные о занятии в расписании",
+            description = "Обновляет уже добавленное ранее занятие. Требует роль ADMIN. При обновлении осуществляются те же проверки, что при добавлении.",
+            tags = {"Lessons"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные занятия для обновления",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LessonUpdRequest.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                 "disciplineName": "programming",
+                                                 "groupName": "23.Б11-ПУ",
+                                                 "teacherEmail": "Karen_Pagac75@yahoo.com",
+                                                 "classroomNumber": "test aud",
+                                                 "unitName": "Central unit",
+                                                 "date" : "2025-11-04T17:30:00.000+03:00",
+                                                 "newDisciplineName": "programming",
+                                                 "newGroupName": "23.Б11-ПУ",
+                                                 "newTeacherEmail": "Karen_Pagac75@yahoo.com",
+                                                 "newClassroomNumber": "test aud",
+                                                 "newUnitName": "Central unit",
+                                                 "newDate" : "2025-11-04T09:30:00.000+03:00"
+                                             }
+                                            """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Запись в расписании успешно обновлена или новые параметры не прошли проверки",
+                            content = @Content(
+                                    schema = @Schema(
+                                            type = "string",
+                                            example = """
+                                                    ---------Вариант 1---------
+                                                    Lesson of <new_discipline> for group <new_group> with teacher <new_teacher> in classroom <new_classroom> successfully updated.
+                                                    ---------Вариант 2---------
+                                                    Cannot update lesson with causes: <список причин>
+                                                    """
+                                    )
+
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN) или введенные данные некорректны.",
+                            content = @Content
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public String updateLesson(@RequestBody LessonUpdRequest request) {
         String createLog = service.updateLesson(request);
         if (!createLog.startsWith("Cannot update lesson with causes:")) {
@@ -1460,6 +1962,3 @@ public class UnivController {
     }
 
 }
-/*
-add documentation for other get methods from univ controller (admin methods).
-*/

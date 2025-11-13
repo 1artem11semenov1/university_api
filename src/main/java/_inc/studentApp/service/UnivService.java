@@ -25,7 +25,7 @@ public interface UnivService {
     List<Student> findAllStudent();
     Student saveStudent(Student student);
     Student findStudentByEmail(String email);
-    Student updateStudent(Student student);
+    String updateStudent(Student student);
     void deleteStudent(String email);
 
 
@@ -41,7 +41,7 @@ public interface UnivService {
     Position savePosition(Position position);
     List<Position> findAllPositions();
     Optional<Position> findByPositionName(String positionName);
-    Position updatePosition(Position position);
+    String updatePosition(String name, String newName);
     void deletePosition(Long Id);
 
     // group methods
@@ -55,28 +55,28 @@ public interface UnivService {
     Disciplines saveDiscipline(DisciplineRequest request);
     List<Disciplines> findAllDisciplines();
     Optional<Disciplines> findByDisciplineKey(DisciplinesKey dk);
-    Disciplines updateDiscipline(DisciplineUpdRequest request);
+    String updateDiscipline(DisciplineUpdRequest request);
     void deleteDiscipline(DisciplinesKey key);
 
     // unit methods
     List<Unit> findAllUnits();
     Unit saveUnit(Unit unit);
     Optional<Unit> findUnitByName(String unitName);
-    Unit updateUnit(UnitUpdRequest unit);
+    String updateUnit(UnitUpdRequest unit);
     void deleteUnit(String unitName);
 
     // classroom methods
     List<ClassRoom> findAllClassRooms();
     ClassRoom saveClassRoom(ClassRoomRequest request);
     Optional<ClassRoom> findClassRoomByID(ClassRoomKey id);
-    ClassRoom updateClassRoom(ClassRoomUpdRequest unit);
+    String updateClassRoom(ClassRoomUpdRequest unit);
     void deleteClassRoom(ClassRoomKey id);
 
     // distance methods
     List<Distance> findAllDistances();
     Distance saveDistance(DistanceRequest request);
     Optional<Distance> findDistanceByID(DistanceKey id);
-    Distance updateDistance(DistanceRequest request);
+    String updateDistance(DistanceRequest request);
     void deleteDistance(DistanceKey id);
 
     // lesson methods

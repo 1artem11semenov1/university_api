@@ -2,6 +2,7 @@ package _inc.studentApp.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +15,9 @@ import java.time.Period;
 @Getter
 @Setter
 public abstract class Person {
+    @NotBlank
     private String firstName;
+    @NotBlank
     private String lastName;
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull
