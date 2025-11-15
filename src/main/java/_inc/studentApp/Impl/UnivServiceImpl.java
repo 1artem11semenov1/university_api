@@ -47,6 +47,13 @@ public class UnivServiceImpl implements UnivService {
     @Override
     public String saveUser(User user) {
         String ret = "";
+
+        if (user.getUserName().equals("INIT_ADMIN") && u_repository.findByUserName("INIT_ADMIN").isEmpty()){
+            user.setPassword(encoder.encode(user.getPassword()));
+            u_repository.save(user);
+            return "Default admin user successfully created.";
+        }
+
         boolean isNormal = true;
 
         List<String> inputRole = Arrays.stream(user.getRole().split(" ")).toList();

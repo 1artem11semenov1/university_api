@@ -23,4 +23,9 @@ public class MyUserDetailsService implements UserDetailsService {
         return user.map(MyUserDetails::new)
                 .orElseThrow(()->new UsernameNotFoundException(username + " not found."));
     }
+
+    public boolean existsByUsername(String username) {
+        Optional<User> user = u_repository.findByUserName(username);
+        return user.isPresent();
+    }
 }
