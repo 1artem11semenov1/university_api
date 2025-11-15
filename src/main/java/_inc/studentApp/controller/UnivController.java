@@ -217,11 +217,51 @@ public class UnivController {
     }
     @DeleteMapping("/delete-user/{uname}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление пользователя по юзернейму",
+            description = "Удаляет пользователя с указанным юзернеймом, который берется из пути. Требуется роль ADMIN",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или пользователь не существовал"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteByUserName(@PathVariable("uname") String username){
         service.deleteUser(username);
     }
     @DeleteMapping("/deleteall-users")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление всех пользователей",
+            description = "Удаляет всех сохраненных пользователей. Требуется рель ADMIN",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteAllUsers(){
         service.deleteAllUsers();
     }
@@ -405,9 +445,28 @@ public class UnivController {
     public String updateStudent(@RequestBody Student student) {
         return service.updateStudent(student);
     }
-
     @DeleteMapping("/delete_student/{email}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление студента по email",
+            description = "Удаляет студента с указанным email, который берется из пути. Требуется роль ADMIN",
+            tags = {"Students"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или студент не существовал"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteStudent(@PathVariable String email) {
         service.deleteStudent(email);
     }
@@ -592,6 +651,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_employee/{email}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление сотрудника по email",
+            description = "Удаляет сотрудника с указанным email, который берется из пути. Требуется роль ADMIN",
+            tags = {"Employees"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или сотрудник не существовал"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteEmployee(@PathVariable String email) {
         service.deleteEmployee(email);
     }
@@ -714,6 +793,7 @@ public class UnivController {
     @Operation(
             summary = "Обновить данные учебной группы",
             description = "Обновляет уже существующего группу. Требует роль ADMIN.",
+            tags = {"Groups"},
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -749,6 +829,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_group/{name}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление учебной группы",
+            description = "Удаляет группу с её номеру, который берется из пути. Требуется роль ADMIN",
+            tags = {"Groups"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или группа не существовала"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteGroup(@PathVariable("name") String name) {
         service.deleteGroup(name);
     }
@@ -909,6 +1009,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_position/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление должности по id",
+            description = "Удаляет должность с указанным id, который берется из пути. Требуется роль ADMIN",
+            tags = {"Positions"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или должность не существовала"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deletePosition(@PathVariable Long id) {
         service.deletePosition(id);
     }
@@ -1102,6 +1222,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_discipline/{name}/{group}/{teacher}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление дисциплины по ключу",
+            description = "Удаляет дисциплину с указанным ключем (name, group, teacher), который берется из пути. Требуется роль ADMIN",
+            tags = {"Disciplines"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или дисциплина не существовала"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteDiscipline(@PathVariable("name") String disciplineName,
                                  @PathVariable("group") String groupName,
                                  @PathVariable("teacher") String teacherEmail)
@@ -1282,6 +1422,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_unit/{name}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление подразделения ВУЗа по названию",
+            description = "Удаляет подразделения ВУЗа с указанным названием, которое берется из пути. Требуется роль ADMIN",
+            tags = {"Units"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или подразделение не существовало"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteUnit(@PathVariable String name) {
         service.deleteUnit(name);
     }
@@ -1375,7 +1535,7 @@ public class UnivController {
     @Operation(
             summary = "Найти аудиторию по ключу",
             description = "Поиск аудитории по составному ключу (номер аудитории, название подразделения), который берёт из пути. Требует роль ADMIN.",
-            tags = {"Classrooms"},
+            tags = {"ClassRooms"},
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -1464,6 +1624,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_classroom/{number}/{unit}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление аудиторию по ключу",
+            description = "Удаляет аудиторию с указанным ключем (number, unit), который берется из пути. Требуется роль ADMIN",
+            tags = {"ClassRooms"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или аудитория не существовала"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteClassRoom(@PathVariable("number") String number,
                                 @PathVariable("unit") String unitName)
     {
@@ -1647,6 +1827,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_distance/{from}/{to}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление дистанции по ключу",
+            description = "Удаляет дистанции с указанным ключем (from, to), который берется из пути. Требуется роль ADMIN",
+            tags = {"Distances"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или дистанция не существовала"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteDistance(@PathVariable("from") String unitFrom,
                                @PathVariable("to") String unitTo)
     {
@@ -1861,7 +2061,7 @@ public class UnivController {
     @Operation(
             summary = "Обновить данные о занятии в расписании",
             description = "Обновляет уже добавленное ранее занятие. Требует роль ADMIN. При обновлении осуществляются те же проверки, что при добавлении.",
-            tags = {"Lessons"},
+            tags = {"Schedule"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные занятия для обновления",
                     required = true,
@@ -1932,6 +2132,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_lesson/{discipline}/{group}/{teacher}/{number}/{unit}/{date}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление занятия по ключу",
+            description = "Удаляет дисциплину с указанным ключем (discipline, group, teacher, number, unit, date), который берется из пути. Требуется роль ADMIN",
+            tags = {"Schedule"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление или такой записи в расписании не было"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteLesson(@PathVariable("discipline") String disciplineName,
                              @PathVariable("group") String groupName,
                              @PathVariable("teacher") String teacherEmail,
@@ -1957,6 +2177,26 @@ public class UnivController {
     }
     @DeleteMapping("/delete_all_lessons")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Удаление всех занятий",
+            description = "Очищает таблицу с расписанием. Требуется роль ADMIN",
+            tags = {"Schedule"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Успешное удаление"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Пользователь не авторизован"
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Недостаточно прав (требуется роль ADMIN)"
+                    )
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deleteAllLessons() {
         service.deleteAllLessons();
     }
