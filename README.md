@@ -3,12 +3,12 @@
 University API - веб-приложение для хранения данных об университете. Целью создания данного api является доступ к расписанию и связанным с ним данными а так же их добавление.
 Предметной областью являются студенты и работники ВУЗа, должности, учебные группы, преподаваемые дисциплины, подразделения университета и аудитории, расстояния между подразделениями, занятия.
 #### Вход
-При входе на сайт будет необходимо ввести логин пароль. Для не зарегестрированных пользователей реализовано добавление пользователя в ходе которого проверяются существование записи с соответствующим email в таблицах students и employees, а так же корректность указанной роли.
+При входе на сайт будет необходимо ввести логин и пароль. Для не зарегестрированных пользователей реализовано добавление пользователя в ходе которого проверяются существование записи с соответствующим email в таблицах students и employees, а так же корректность указанной роли.
 
 
 
 # Данные
-#### Схема бд находится в src/scheme/Scheme.png
+#### Схема бд находится в src/scheme/Scheme.png. Схема с указанием связей:src/scheme/Scheme-keys.png.
 ## Имеются следующие сущности:
 
 #### Student (содержатся в таблице Students)
@@ -35,7 +35,7 @@ public class Student extends Person{
                     foreignKeyDefinition = "FOREIGN KEY (group_id) REFERENCES groups(group_name) ON UPDATE CASCADE ON DELETE SET NULL"
             )
     )
-    @NotBlank
+
     private Group group;
     private String level;
     private String enterYear;
@@ -51,7 +51,9 @@ public class Student extends Person{
 @Getter
 @Setter
 public abstract class Person {
+    @NotBlank
     private String firstName;
+    @NotBlank
     private String lastName;
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull
@@ -86,19 +88,20 @@ public abstract class Person {
 @NoArgsConstructor
 @Setter
 public class Employee extends Person{
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "employees_positions",
             joinColumns = {@JoinColumn(name = "employee_id")},
             inverseJoinColumns = {@JoinColumn(name = "position_id")}
     )
     @JsonIgnore
-    private Set<Position> positions = new HashSet<>();
+    private List<Position> positions = new ArrayList<>();
     private int experience;
 
     @OneToMany(mappedBy = "teacherEmail")
     @JsonIgnore
     private List<Disciplines> disciplines = new ArrayList<>();
+
 }
 ```
 
@@ -111,6 +114,7 @@ public class Employee extends Person{
 @Entity
 @Data
 @Table(name = "positions")
+@Getter
 public class Position {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
@@ -118,7 +122,7 @@ public class Position {
     @NotBlank
     private String positionName;
 
-    @ManyToMany(mappedBy = "positions")
+    @ManyToMany(mappedBy = "positions", cascade = CascadeType.ALL)
     private Set<Employee> employees = new HashSet<>();
 }
 ```
@@ -162,12 +166,13 @@ public class Group {
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Disciplines {
     @EmbeddedId
     private DisciplinesKey id;
 
     @NotNull
-    private int countHours
+    private int countHours;
 
     @ManyToOne
     @MapsId("groupName")
@@ -182,6 +187,9 @@ public class Disciplines {
     public String getDisciplineName(){
         return this.id.getName();
     }
+
+    @OneToMany(mappedBy = "discipline")
+    List<Lesson> lessons = new LinkedList<>();
 }
 ```
 
@@ -193,6 +201,7 @@ public class Disciplines {
 @EqualsAndHashCode
 @Getter
 public class DisciplinesKey implements Serializable {
+    @Column(name = "discipline_name")
     private String disciplineName;
     private String groupName;
     private String teacherEmail;
@@ -211,6 +220,8 @@ public class DisciplinesKey implements Serializable {
 @Data
 @Entity
 @Table(name = "units")
+@NoArgsConstructor
+@Setter
 public class Unit {
     @Id
     @Column(name = "unit_name")
@@ -219,10 +230,12 @@ public class Unit {
     @NotBlank
     String address;
 
-    @OneToMany(mappedBy = "unitName")
+    @JsonIgnore
+    @OneToMany(mappedBy = "unit")
     List<ClassRoom> classrooms = new ArrayList<>();
 
-    @OneToMany(mappedBy = "unitFrom")
+    @JsonIgnore
+    @OneToMany(mappedBy = "unitF")
     List<Distance> distances = new ArrayList<>();
 }
 ```
@@ -246,8 +259,10 @@ public class ClassRoom {
     @ManyToOne
     @MapsId("unitName")
     @JoinColumn(name = "unit_name")
-    Unit unitName;
+    @JsonIgnore
+    Unit unit;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "classroom")
     List<Lesson> lessons = new LinkedList<>();
 }
@@ -266,7 +281,6 @@ public class ClassRoomKey implements Serializable {
     @Column(name = "unit_name")
     String unitName;
 }
-
 ```
 
 #### Distance (содержатся в таблице distances)
@@ -282,7 +296,7 @@ public class ClassRoomKey implements Serializable {
 @Table(name = "distances")
 public class Distance {
     @EmbeddedId
-    DisctanceKey id;
+    DistanceKey id;
 
     @Column(name = "time_minutes")
     int timeMinutes;
@@ -290,7 +304,14 @@ public class Distance {
     @ManyToOne
     @MapsId("unitFrom")
     @JoinColumn(name = "unit_from")
-    Unit unitFrom;
+    @JsonIgnore
+    Unit unitF;
+
+    @ManyToOne
+    @MapsId("unitTo")
+    @JoinColumn(name = "unit_to")
+    @JsonIgnore
+    Unit unitT;
 }
 ```
 
@@ -301,7 +322,7 @@ public class Distance {
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
-public class DisctanceKey implements Serializable {
+public class DistanceKey implements Serializable {
     @Column(name = "unit_from")
     String unitFrom;
 
@@ -324,6 +345,8 @@ public class DisctanceKey implements Serializable {
 @Data
 @Entity
 @Table(name = "schedule")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Lesson {
     @EmbeddedId
     LessonKey id;
@@ -362,8 +385,16 @@ public class LessonKey implements Serializable {
 
     Date date;
 }
-
 ```
+
+# Ограничения целостности
+На внешние ключи таблиц были установлены следующие ограничения:
+- students-groups: ON UPDATE CASCADE ON DELETE SET NULL
+- groups-disciplines: ON UPDATE CASCADE ON DELETE RESTRICT
+- disciplines-schedule: ON UPDATE CASCADE ON DELETE RESTRICT
+- units-classrooms: ON UPDATE CASCADE ON DELETE RESTRICT
+- classrooms-schedule: ON UPDATE CASCADE ON DELETE RESTRICT
+- units-distances: ON UPDATE CASCADE ON DELETE RESTRICT на оба ключа (подразделения отправки и прибытия)
 
 # Пользовательские роли
 #### Студент ("ROLE_STUDENT")
