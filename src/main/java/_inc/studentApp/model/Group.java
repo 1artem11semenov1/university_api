@@ -18,7 +18,7 @@ public class Group {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Student> students = new LinkedList<>();
-    @OneToMany(mappedBy = "groupName", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "groupName")
     @JsonIgnore
     private List<Disciplines> disciplines = new ArrayList<>();
 }
