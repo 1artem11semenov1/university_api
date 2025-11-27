@@ -176,12 +176,23 @@ public class Disciplines {
 
     @ManyToOne
     @MapsId("groupName")
-    @JoinColumn(name = "group_name")
+    @JoinColumn(
+            name = "group_name",
+            foreignKey = @ForeignKey(
+                    name = "disciplines_groups",
+                    foreignKeyDefinition = "FOREIGN KEY (group_name) REFERENCES groups(group_name) ON UPDATE CASCADE ON DELETE RESTRICT"
+            ))
     private Group groupName;
 
     @ManyToOne
     @MapsId("teacherEmail")
-    @JoinColumn(name = "teacher_email")
+    @JoinColumn(
+            name = "teacher_email",
+            foreignKey = @ForeignKey(
+                    name = "disciplines_employees",
+                    foreignKeyDefinition = "FOREIGN KEY (teacher_email) REFERENCES employees(email) ON UPDATE CASCADE ON DELETE RESTRICT"
+            )
+    )
     private Employee teacherEmail;
 
     public String getDisciplineName(){
@@ -258,7 +269,13 @@ public class ClassRoom {
 
     @ManyToOne
     @MapsId("unitName")
-    @JoinColumn(name = "unit_name")
+    @JoinColumn(
+            name = "unit_name",
+            foreignKey = @ForeignKey(
+                    name = "units_classrooms",
+                    foreignKeyDefinition = "FOREIGN KEY (unit_name) REFERENCES units(unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
     @JsonIgnore
     Unit unit;
 
@@ -303,13 +320,25 @@ public class Distance {
 
     @ManyToOne
     @MapsId("unitFrom")
-    @JoinColumn(name = "unit_from")
+    @JoinColumn(
+            name = "unit_from",
+            foreignKey = @ForeignKey(
+                    name = "units_distances",
+                    foreignKeyDefinition = "FOREIGN KEY (unit_from) REFERENCES units(unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
     @JsonIgnore
     Unit unitF;
 
     @ManyToOne
     @MapsId("unitTo")
-    @JoinColumn(name = "unit_to")
+    @JoinColumn(
+            name = "unit_to",
+            foreignKey = @ForeignKey(
+                    name = "units_distances_to",
+                    foreignKeyDefinition = "FOREIGN KEY (unit_to) REFERENCES units(unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
     @JsonIgnore
     Unit unitT;
 }
@@ -353,19 +382,46 @@ public class Lesson {
 
     @ManyToOne
     @MapsId("classroom")
-    @JoinColumns({
-            @JoinColumn(name = "classroom_number", referencedColumnName = "number"),
-            @JoinColumn (name = "unit_name", referencedColumnName = "unit_name")
-    })
+    @JoinColumns(
+            foreignKey = @ForeignKey(
+                    name = "classrooms_schedule",
+                    foreignKeyDefinition = "FOREIGN KEY (classroom_number, unit_name) REFERENCES classrooms(number, unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            ),
+            value = {
+                    @JoinColumn(
+                            name = "classroom_number",
+                            referencedColumnName = "number"
+                    ),
+                    @JoinColumn(
+                            name = "unit_name",
+                            referencedColumnName = "unit_name"
+                    )
+            }
+    )
     ClassRoom classroom;
 
     @ManyToOne
     @MapsId("discipline")
-    @JoinColumns({
-            @JoinColumn(name = "discipline_name", referencedColumnName = "discipline_name"),
-            @JoinColumn (name = "group_name", referencedColumnName = "group_name"),
-            @JoinColumn (name = "teacher_email", referencedColumnName = "teacher_email")
-    })
+    @JoinColumns(
+            foreignKey = @ForeignKey(
+                    name = "disciplines_schedule",
+                    foreignKeyDefinition = "FOREIGN KEY (teacher_email, discipline_name, group_name) REFERENCES disciplines(teacher_email, discipline_name, group_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            ),
+            value = {
+                    @JoinColumn(
+                            name = "discipline_name",
+                            referencedColumnName = "discipline_name"
+                    ),
+                    @JoinColumn(
+                            name = "group_name",
+                            referencedColumnName = "group_name"
+                    ),
+                    @JoinColumn(
+                            name = "teacher_email",
+                            referencedColumnName = "teacher_email"
+                    )
+            }
+    )
     Disciplines discipline;
 }
 ```
@@ -391,10 +447,11 @@ public class LessonKey implements Serializable {
 На внешние ключи таблиц были установлены следующие ограничения:
 - students-groups: ON UPDATE CASCADE ON DELETE SET NULL
 - groups-disciplines: ON UPDATE CASCADE ON DELETE RESTRICT
-- disciplines-schedule: ON UPDATE CASCADE ON DELETE RESTRICT
-- units-classrooms: ON UPDATE CASCADE ON DELETE RESTRICT
-- classrooms-schedule: ON UPDATE CASCADE ON DELETE RESTRICT
-- units-distances: ON UPDATE CASCADE ON DELETE RESTRICT на оба ключа (подразделения отправки и прибытия)
+- employees-disciplines: ON UPDATE CASCADE ON DELETE RESTRICT
+- disciplines-schedule: ON UPDATE CASCADE ON DELETE CASCADE
+- units-classrooms: ON UPDATE CASCADE ON DELETE CASCADE
+- classrooms-schedule: ON UPDATE CASCADE ON DELETE CASCADE
+- units-distances: ON UPDATE CASCADE ON DELETE CASCADE на оба ключа (подразделения отправки и прибытия)
 
 # Пользовательские роли
 #### Студент ("ROLE_STUDENT")
