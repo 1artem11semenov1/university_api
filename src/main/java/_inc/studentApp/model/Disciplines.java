@@ -25,12 +25,23 @@ public class Disciplines {
 
     @ManyToOne
     @MapsId("groupName")
-    @JoinColumn(name = "group_name")
+    @JoinColumn(
+            name = "group_name",
+            foreignKey = @ForeignKey(
+                    name = "disciplines_groups",
+                    foreignKeyDefinition = "FOREIGN KEY (group_name) REFERENCES groups(group_name) ON UPDATE CASCADE ON DELETE RESTRICT"
+            ))
     private Group groupName;
 
     @ManyToOne
     @MapsId("teacherEmail")
-    @JoinColumn(name = "teacher_email")
+    @JoinColumn(
+            name = "teacher_email",
+            foreignKey = @ForeignKey(
+                    name = "disciplines_employees",
+                    foreignKeyDefinition = "FOREIGN KEY (teacher_email) REFERENCES employees(email) ON UPDATE CASCADE ON DELETE RESTRICT"
+            )
+    )
     private Employee teacherEmail;
 
     public String getDisciplineName(){

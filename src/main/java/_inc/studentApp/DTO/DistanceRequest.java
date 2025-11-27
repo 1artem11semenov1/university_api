@@ -28,12 +28,13 @@ public class DistanceRequest {
         return ddto;
     }
 
-    public Distance toEntity(Unit uf){
+    public Distance toEntity(Unit uf, Unit ut){
         Distance dist = new Distance();
 
         dist.setId(new DistanceKey(unitFrom, unitTo));
         dist.setTimeMinutes(time);
         dist.setUnitF(uf);
+        dist.setUnitT(ut);
 
         return dist;
     }

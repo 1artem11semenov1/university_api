@@ -666,7 +666,7 @@ public class UnivController {
                     ),
                     @ApiResponse(
                             responseCode = "403",
-                            description = "Недостаточно прав (требуется роль ADMIN)"
+                            description = "Недостаточно прав (требуется роль ADMIN) или есть ссылки в disciplines не этого сотрудника"
                     )
             },
             security = @SecurityRequirement(name = "bearerAuth")
@@ -844,7 +844,7 @@ public class UnivController {
                     ),
                     @ApiResponse(
                             responseCode = "403",
-                            description = "Недостаточно прав (требуется роль ADMIN)"
+                            description = "Недостаточно прав (требуется роль ADMIN)  или есть ссылки в disciplines не эту группу"
                     )
             },
             security = @SecurityRequirement(name = "bearerAuth")

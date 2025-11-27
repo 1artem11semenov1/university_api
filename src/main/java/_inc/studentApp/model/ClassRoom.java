@@ -18,7 +18,13 @@ public class ClassRoom {
 
     @ManyToOne
     @MapsId("unitName")
-    @JoinColumn(name = "unit_name")
+    @JoinColumn(
+            name = "unit_name",
+            foreignKey = @ForeignKey(
+                    name = "units_classrooms",
+                    foreignKeyDefinition = "FOREIGN KEY (unit_name) REFERENCES units(unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
     @JsonIgnore
     Unit unit;
 

@@ -17,18 +17,45 @@ public class Lesson {
 
     @ManyToOne
     @MapsId("classroom")
-    @JoinColumns({
-            @JoinColumn(name = "classroom_number", referencedColumnName = "number"),
-            @JoinColumn (name = "unit_name", referencedColumnName = "unit_name")
-    })
+    @JoinColumns(
+            foreignKey = @ForeignKey(
+                    name = "classrooms_schedule",
+                    foreignKeyDefinition = "FOREIGN KEY (classroom_number, unit_name) REFERENCES classrooms(number, unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            ),
+            value = {
+                    @JoinColumn(
+                            name = "classroom_number",
+                            referencedColumnName = "number"
+                    ),
+                    @JoinColumn(
+                            name = "unit_name",
+                            referencedColumnName = "unit_name"
+                    )
+            }
+    )
     ClassRoom classroom;
 
     @ManyToOne
     @MapsId("discipline")
-    @JoinColumns({
-            @JoinColumn(name = "discipline_name", referencedColumnName = "discipline_name"),
-            @JoinColumn (name = "group_name", referencedColumnName = "group_name"),
-            @JoinColumn (name = "teacher_email", referencedColumnName = "teacher_email")
-    })
+    @JoinColumns(
+            foreignKey = @ForeignKey(
+                    name = "disciplines_schedule",
+                    foreignKeyDefinition = "FOREIGN KEY (teacher_email, discipline_name, group_name) REFERENCES disciplines(teacher_email, discipline_name, group_name) ON UPDATE CASCADE ON DELETE CASCADE"
+            ),
+            value = {
+                    @JoinColumn(
+                            name = "discipline_name",
+                            referencedColumnName = "discipline_name"
+                    ),
+                    @JoinColumn(
+                            name = "group_name",
+                            referencedColumnName = "group_name"
+                    ),
+                    @JoinColumn(
+                            name = "teacher_email",
+                            referencedColumnName = "teacher_email"
+                    )
+            }
+    )
     Disciplines discipline;
 }

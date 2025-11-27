@@ -400,10 +400,10 @@ public class UnivServiceImpl implements UnivService {
 
         // save reverse distance
         DistanceRequest reverseDistance = new DistanceRequest(request.getUnitTo(), request.getUnitFrom(), request.getTime());
-        dist_repository.save(reverseDistance.toEntity(ut));
+        dist_repository.save(reverseDistance.toEntity(ut, uf));
 
         // save main distance
-        return dist_repository.save(request.toEntity(uf));
+        return dist_repository.save(request.toEntity(uf, ut));
     }
     @Override
     public Optional<Distance> findDistanceByID(DistanceKey id) {

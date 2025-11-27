@@ -28,10 +28,22 @@ public class User {
     private String role;
 
     @OneToOne
-    @JoinColumn(name = "student_id")
+    @JoinColumn(
+            name = "student_id",
+            foreignKey = @ForeignKey(
+                    name = "users_students",
+                    foreignKeyDefinition = "FOREIGN KEY (student_id) REFERENCES students(email) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
     private Student student;
 
     @OneToOne
-    @JoinColumn(name = "employee_id")
+    @JoinColumn(
+            name = "employee_id",
+            foreignKey = @ForeignKey(
+                    name = "users_employees",
+                    foreignKeyDefinition = "FOREIGN KEY (employee_id) REFERENCES employees(email) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
     private Employee employee;
 }
