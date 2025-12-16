@@ -489,3 +489,56 @@ Restful API.
 СУБД - PostgreSQL.
 Для связи Java-кода с СУБД использована библиотека Hibernate.
 Для авторизации и выставления ролей - Spring security.
+
+# Запуск приложения
+## Вариант 1 - docker (необходимо: docker desktop)
+1) Запуск контейнеров
+В терминале в корне проекта прописать
+'''
+docker-compose up
+'''
+2) Заполнение БД (опционально. для демонстрации)
+- Переходим на localhost:5050 (веб pgAdmin).  ->
+- Для входа - логин: admin@admin.com, пароль: root ->
+- Подключаемся к серверу
+- Port:5432
+- Maintenance database: postgres
+- Username: postgres
+- Password:210ro10 ->
+- далее в Servers/<имя, которое вы дали>/Databases/student_db/Schemas/public/Tables открываем Query tool (правая кнопка мыши -> Query tool) и вставляем в окно скрипт, лежащий в корне проекта (init_db.sql)
+
+3) Переход в документацию приложения: http://localhost:8080/swagger-ui/index.html#/
+
+## Вариант 2 - IntellijIDEA (Необходимо: jdk17+, pgAdmin4, postgreSQL)
+1) Для запуска из ide необходимо предварительно развернуть сервер
+
+В pgAdmin4:
+- Add New Server -> 
+- во вкладке General: вводим любое имя -> 
+- во вкладке Connection:
+- Host name/address: localhost
+- Port:5432
+- Maintenance database: postgres
+- Username: postgres
+- Password:210ro10
+
+2) В ide:
+- 2.1) Заходим в src/main/java/StudentAppApplication
+- 2.2) Запускаем его (зеленый треугольник сверху)
+
+3) Заполнение БД (опционально. для демонстрации)
+- в pgAdmin4:
+- в Servers/<имя, которое вы дали>/Databases/student_db/Schemas/public/Tables открываем Query tool (правая кнопка мыши -> Query tool) и вставляем в окно скрипт, лежащий в корне проекта (init_db.sql)
+
+4)Для перехода на страницу документации открываем http://localhost:8080/swagger-ui/index.html#/
+
+# Стандартные данные БД
+после выполнения init_db.sql будет:
+- Созданно 2 группы (23Б11, 23Б12) и забито расписание на семестр под них
+- Создано 4 студенческих аккаунта:
+- semenov@spb.ru, kurmakaev@spb.ru, testst12@spb.ru, testst121@spb.ru. Первые двое - группа 23Б11, остальные - группа 23Б12
+- Создано 6 преподавательских аккаунтов (а также их должности + должность admin):
+- korovkin@spb.ru, nikiforov@spb.ru, svirkin@spb.ru, frolov@spb.ru, maslikov@spb.ru, blekanov@spb.ru
+- создано 4 подразделения ВУЗа, для них заполнены дистанции и аудитории
+
+#### !!! Для всех студентов и преподавателей из скрипта инициализации пароль: 123 !!! администратор - (INIT_ADMIN, INIT_ADMIN)
