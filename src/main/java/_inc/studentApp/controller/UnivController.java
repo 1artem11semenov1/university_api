@@ -475,8 +475,8 @@ public class UnivController {
     // employee methods
     @Operation(
             summary = "Получить список всех сотрудников",
-            description = "Возвращает полный список сотрудников как массив json EmployeeDTO. Требует роль ADMIN.",
-            tags = {"Employees"},
+            description = "Возвращает полный список сотрудников как массив json EmployeeDTO. Требует роль ADMIN или TEACHER.",
+            tags = {"Employees", "Teacher methods"},
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -493,14 +493,14 @@ public class UnivController {
                     ),
                     @ApiResponse(
                             responseCode = "403",
-                            description = "Недостаточно прав (требуется роль ADMIN)",
+                            description = "Недостаточно прав (требуется роль ADMIN или TEACHER)",
                             content = @Content
                     )
             },
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @GetMapping("/get_employees")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public List<EmployeeDTO> findAllEmployee(){
         return service.findAllEmployee().stream().map(EmployeeDTO::fromEntity).collect(Collectors.toList());
     }
@@ -678,8 +678,8 @@ public class UnivController {
     // group methods
     @Operation(
             summary = "Получить список всех учебных групп",
-            description = "Возвращает полный список учебных групп как массив json Group. Требует роль ADMIN.",
-            tags = {"Groups"},
+            description = "Возвращает полный список учебных групп как массив json Group. Требует роль ADMIN или STUDENT.",
+            tags = {"Groups", "Student methods"},
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -696,14 +696,14 @@ public class UnivController {
                     ),
                     @ApiResponse(
                             responseCode = "403",
-                            description = "Недостаточно прав (требуется роль ADMIN)",
+                            description = "Недостаточно прав (требуется роль ADMIN или STUDENT)",
                             content = @Content
                     )
             },
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @GetMapping("/get_groups")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
     public List<Group> findAllGroup(){
         return service.findAllGroups();
     }

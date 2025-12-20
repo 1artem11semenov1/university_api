@@ -11,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 public class DisciplineAndTeacherRequest {
     DisciplineDTO discipline;
-    EmployeeDTO teacher;
+    TeacherForStudentDTO teacher;
     List<String> positions;
 }

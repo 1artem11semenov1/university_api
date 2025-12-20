@@ -1,9 +1,6 @@
 package _inc.studentApp.controller;
 
-import _inc.studentApp.DTO.DisciplineAndTeacherRequest;
-import _inc.studentApp.DTO.DisciplineDTO;
-import _inc.studentApp.DTO.EmployeeDTO;
-import _inc.studentApp.DTO.LessonRequest;
+import _inc.studentApp.DTO.*;
 import _inc.studentApp.model.Employee;
 import _inc.studentApp.model.Group;
 import _inc.studentApp.model.Student;
@@ -25,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Tag(name = "Teachers methods")
+@Tag(name = "Teacher methods")
 @RestController
 @RequestMapping("/api/v1/employee")
 @AllArgsConstructor
@@ -156,8 +153,10 @@ public class EmployeeController {
             },
             security = @SecurityRequirement(name = "bearerAuth")
     )
-    public List<Student> getStudentByGroup(@PathVariable("group") String groupName){
-        return service.getStudentByGroup(groupName);
+    public List<StudentForTeacherDTO> getStudentByGroup(@PathVariable("group") String groupName){
+        return service.getStudentByGroup(groupName)
+                .stream().map(StudentForTeacherDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/about-me")

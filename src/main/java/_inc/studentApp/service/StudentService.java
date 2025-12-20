@@ -4,6 +4,7 @@ package _inc.studentApp.service;
 import _inc.studentApp.DTO.DisciplineAndTeacherRequest;
 import _inc.studentApp.DTO.DisciplineDTO;
 import _inc.studentApp.DTO.EmployeeDTO;
+import _inc.studentApp.DTO.TeacherForStudentDTO;
 import _inc.studentApp.model.*;
 import _inc.studentApp.repository.*;
 import lombok.AllArgsConstructor;
@@ -65,7 +66,7 @@ public class StudentService {
             List<Position> positions;
             if (teacher != null){
                 positions = teacher.getPositions();
-                newRequest.setTeacher(EmployeeDTO.fromEntity(teacher));
+                newRequest.setTeacher(TeacherForStudentDTO.fromEntity(teacher));
                 newRequest.setPositions(
                                 positions.stream()
                                 .map(Position::getPositionName)
