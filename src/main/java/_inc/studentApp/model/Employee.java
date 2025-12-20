@@ -30,7 +30,7 @@ public class Employee extends Person{
     private List<Position> positions = new ArrayList<>();
     private int experience;
 
-    @OneToMany(mappedBy = "teacherEmail")
+    @OneToMany(mappedBy = "teacherID")
     @JsonIgnore
     private List<Disciplines> disciplines = new ArrayList<>();
 

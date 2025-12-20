@@ -9,8 +9,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
-public interface UnitRepository extends JpaRepository<Unit, String> {
+public interface UnitRepository extends JpaRepository<Unit, Long> {
     @Query(value = "UPDATE units"
             +" SET unit_name = :newName, address = :newAddress"
             +" WHERE unit_name = :oldName"
@@ -21,4 +22,6 @@ public interface UnitRepository extends JpaRepository<Unit, String> {
             @Param("newName") String newName,
             @Param("newAddress") String newAddress
     );
+
+    Optional<Unit> findByUnitName(String unitName);
 }

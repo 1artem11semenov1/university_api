@@ -16,11 +16,11 @@ public class Student extends Person{
             name = "group_id",
             foreignKey = @ForeignKey(
                     name = "group_id",
-                    foreignKeyDefinition = "FOREIGN KEY (group_id) REFERENCES groups(group_name) ON UPDATE CASCADE ON DELETE SET NULL"
+                    foreignKeyDefinition = "FOREIGN KEY (group_id) REFERENCES groups(id) ON UPDATE CASCADE ON DELETE SET NULL"
             )
     )
-
     private Group group;
+
     private String level;
     private String enterYear;
 }

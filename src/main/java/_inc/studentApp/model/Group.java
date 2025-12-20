@@ -13,12 +13,17 @@ import java.util.List;
 @Table(name = "groups")
 public class Group {
     @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    Long id;
+
+    @Column(unique = true)
     private String groupName;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Student> students = new LinkedList<>();
-    @OneToMany(mappedBy = "groupName")
+
+    @OneToMany(mappedBy = "groupID")
     @JsonIgnore
     private List<Disciplines> disciplines = new ArrayList<>();
 }

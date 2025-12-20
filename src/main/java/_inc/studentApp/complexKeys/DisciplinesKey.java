@@ -17,8 +17,8 @@ import java.io.Serializable;
 public class DisciplinesKey implements Serializable {
     @Column(name = "discipline_name")
     private String disciplineName;
-    private String groupName;
-    private String teacherEmail;
+    private Long groupId;
+    private Long teacherId;
 
     public String getName() {return disciplineName;}
 }

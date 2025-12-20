@@ -17,7 +17,14 @@ public class Lesson {
 
     @ManyToOne
     @MapsId("classroom")
-    @JoinColumns(
+    @JoinColumn(
+            name = "classroom_id",
+            foreignKey = @ForeignKey(
+                    name = "schedule_classrooms",
+                    foreignKeyDefinition = "FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
+    /*@JoinColumns(
             foreignKey = @ForeignKey(
                     name = "classrooms_schedule",
                     foreignKeyDefinition = "FOREIGN KEY (classroom_number, unit_name) REFERENCES classrooms(number, unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
@@ -32,12 +39,19 @@ public class Lesson {
                             referencedColumnName = "unit_name"
                     )
             }
-    )
+    )*/
     ClassRoom classroom;
 
     @ManyToOne
     @MapsId("discipline")
-    @JoinColumns(
+    @JoinColumn(
+            name = "discipline_id",
+            foreignKey = @ForeignKey(
+                    name = "schedule_disciplines",
+                    foreignKeyDefinition = "FOREIGN KEY (discipline_id) REFERENCES disciplines(id) ON UPDATE CASCADE ON DELETE CASCADE"
+            )
+    )
+    /*@JoinColumns(
             foreignKey = @ForeignKey(
                     name = "disciplines_schedule",
                     foreignKeyDefinition = "FOREIGN KEY (teacher_email, discipline_name, group_name) REFERENCES disciplines(teacher_email, discipline_name, group_name) ON UPDATE CASCADE ON DELETE CASCADE"
@@ -56,6 +70,6 @@ public class Lesson {
                             referencedColumnName = "teacher_email"
                     )
             }
-    )
+    )*/
     Disciplines discipline;
 }

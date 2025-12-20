@@ -21,7 +21,7 @@ public class Distance {
             name = "unit_from",
             foreignKey = @ForeignKey(
                     name = "units_distances",
-                    foreignKeyDefinition = "FOREIGN KEY (unit_from) REFERENCES units(unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+                    foreignKeyDefinition = "FOREIGN KEY (unit_from) REFERENCES units(id) ON UPDATE CASCADE ON DELETE CASCADE"
             )
     )
     @JsonIgnore
@@ -33,7 +33,7 @@ public class Distance {
             name = "unit_to",
             foreignKey = @ForeignKey(
                     name = "units_distances_to",
-                    foreignKeyDefinition = "FOREIGN KEY (unit_to) REFERENCES units(unit_name) ON UPDATE CASCADE ON DELETE CASCADE"
+                    foreignKeyDefinition = "FOREIGN KEY (unit_to) REFERENCES units(id) ON UPDATE CASCADE ON DELETE CASCADE"
             )
     )
     @JsonIgnore

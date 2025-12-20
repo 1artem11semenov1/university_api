@@ -140,7 +140,8 @@ public class UnivServiceImpl implements UnivService {
     }
     @Override
     public Student saveStudent(Student student) {
-
+        Group group = g_repository.findByGroupName(student.getGroup().getGroupName()).orElseThrow();
+        student.setGroup(group);
         return s_repository.save(student);
     }
     @Override
@@ -149,11 +150,14 @@ public class UnivServiceImpl implements UnivService {
     }
     @Override
     public String updateStudent(Student student) {
+        Group group = g_repository.findByGroupName(student.getGroup().getGroupName()).orElseThrow();
+        student.setGroup(group);
         Student old = s_repository.findByEmail(student.getEmail());
         if (old == null){
             return "There is no student " + student.getEmail();
         }
 
+        student.setId(old.getId());
         s_repository.save(student);
         return "Student " + student.getEmail() + " successfully updated";
     }
@@ -264,51 +268,74 @@ public class UnivServiceImpl implements UnivService {
         Group group = g_repository.findByGroupName(request.getGroupName())
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
 
-        DisciplinesKey key = new DisciplinesKey(request.getDisciplineName(), group.getGroupName(), teacher.getEmail());
-        Disciplines discipline = new Disciplines(key, request.getCountHours(), group, teacher,null);
+        Disciplines discipline = new Disciplines();
+        discipline.setWithoutId(
+                request.getDisciplineName(),
+                group.getId(),
+                teacher.getId(),
+                request.getCountHours(),
+                group,
+                teacher,
+                null
+        );
 
-        return d_repository.save(discipline);
+        Optional<Disciplines> check = d_repository.findByPotentialKey(request.getDisciplineName(), group.getId(), teacher.getId());
+        if (check.isEmpty()) {
+            return d_repository.save(discipline);
+        }
+
+        return check.get();
     }
     @Override
-    public Optional<Disciplines> findByDisciplineKey(DisciplinesKey dk){ return d_repository.findById(dk); }
+    public Optional<Disciplines> findByDisciplineKey(DisciplinesKey dk){
+        return d_repository.findByPotentialKey(dk.getDisciplineName(), dk.getGroupId(), dk.getTeacherId());
+    }
     @Override
     public String updateDiscipline(DisciplineUpdRequest request) {
-        DisciplinesKey oldKey = new DisciplinesKey(
-                request.getDisciplineName(),
-                request.getGroupName(),
-                request.getTeacherEmail()
-        );
-        Optional<Disciplines> old = d_repository.findById(oldKey);
-        if (old.isEmpty()){
-            return "There is no discipline " + request.getDisciplineName();
-        }
-        Optional<Group> newGroup = g_repository.findByGroupName(request.getGroupName());
-        Optional<Employee> newTeacher = e_repository.findByEmail(request.getNewTeacherEmail());
-        if (newTeacher.isEmpty() || newGroup.isEmpty()){
-            String log = "";
-            if (newTeacher.isEmpty()){
-                log += "Can not update. Teacher " + request.getNewTeacherEmail() + " not exist ";
+        Optional<Group> oldGroup = g_repository.findByGroupName(request.getGroupName());
+        Optional<Employee> oldEmployee = e_repository.findByEmail(request.getTeacherEmail());
+        if (oldGroup.isPresent() && oldEmployee.isPresent()) {
+            DisciplinesKey oldKey = new DisciplinesKey(
+                    request.getDisciplineName(),
+                    oldGroup.get().getId(),
+                    oldEmployee.get().getId()
+                    );
+            Optional<Disciplines> old = d_repository.findByPotentialKey(oldKey.getDisciplineName(), oldKey.getGroupId(), oldKey.getTeacherId());
+            if (old.isEmpty()) {
+                return "There is no discipline " + request.getDisciplineName();
             }
-            if (newGroup.isEmpty()){
-                log += "Can not update. Group " + request.getNewGroupName() + " not exist";
-            }
-        }
-        Disciplines newDis = d_repository.update(
-                request.getDisciplineName(),
-                request.getGroupName(),
-                request.getTeacherEmail(),
-                request.getNewDisciplineName(),
-                request.getNewGroupName(),
-                request.getNewTeacherEmail(),
-                request.getNewCountHours()
-        );
+            Optional<Group> newGroup = g_repository.findByGroupName(request.getGroupName());
+            Optional<Employee> newTeacher = e_repository.findByEmail(request.getNewTeacherEmail());
+            if (newTeacher.isEmpty() || newGroup.isEmpty()) {
+                String log = "";
+                if (newTeacher.isEmpty()) {
+                    log += "Can not update. Teacher " + request.getNewTeacherEmail() + " not exist ";
+                }
+                if (newGroup.isEmpty()) {
+                    log += "Can not update. Group " + request.getNewGroupName() + " not exist";
+                }
+                return log;
+            } else {
+                Disciplines newDis = d_repository.update(
+                        request.getDisciplineName(),
+                        oldGroup.get().getId(),
+                        oldEmployee.get().getId(),
+                        request.getNewDisciplineName(),
+                        newGroup.get().getId(),
+                        newTeacher.get().getId(),
+                        request.getNewCountHours()
+                );
 
-        return "Successfully update discipline " + newDis.getDisciplineName();
+                return "Successfully update discipline " + newDis.getDisciplineName();
+            }
+        }
+        return "Old group or employee not exist";
     }
     @Override
     @Transactional
     public void deleteDiscipline(DisciplinesKey key) {
-        d_repository.deleteById(key);
+        Optional<Disciplines> toDelete = d_repository.findByPotentialKey(key.getDisciplineName(), key.getGroupId(), key.getTeacherId());
+        toDelete.ifPresent(disciplines -> d_repository.deleteById(disciplines.getId()));
     }
 
     // methods for units
@@ -318,15 +345,19 @@ public class UnivServiceImpl implements UnivService {
     }
     @Override
     public Unit saveUnit(Unit unit) {
-        return un_repository.save(unit);
+        Optional<Unit> check = un_repository.findByUnitName(unit.getUnitName());
+        if (check.isEmpty()) {
+            return un_repository.save(unit);
+        }
+        return unit;
     }
     @Override
     public Optional<Unit> findUnitByName(String unitName) {
-        return un_repository.findById(unitName);
+        return un_repository.findByUnitName(unitName);
     }
     @Override
     public String updateUnit(UnitUpdRequest request) {
-        Optional<Unit> old = un_repository.findById(request.getOldName());
+        Optional<Unit> old = un_repository.findByUnitName(request.getOldName());
         if (old.isEmpty()){
             return "There is no unit " + request.getOldName();
         }
@@ -342,42 +373,41 @@ public class UnivServiceImpl implements UnivService {
     }
     @Transactional
     public void deleteUnit(String unitName) {
-        un_repository.deleteById(unitName);
+        Optional<Unit> toDel = un_repository.findByUnitName(unitName);
+        toDel.ifPresent(unit -> un_repository.deleteById(unit.getId()));
     }
 
     // methods for classrooms
     public List<ClassRoom> findAllClassRooms() { return c_repository.findAll(); }
     @Override
     public ClassRoom saveClassRoom(ClassRoomRequest request) {
-        ClassRoomKey key = new ClassRoomKey(request.getClassroomNumber(), request.getUnitName());
-        Unit unit = un_repository.findById(request.getUnitName()).orElseThrow();
-        ClassRoom newClassRoom = new ClassRoom();
-        newClassRoom.setId(key);
-        newClassRoom.setCapacity(request.getCapacity());
-        newClassRoom.setUnit(unit);
-        return c_repository.save(newClassRoom);
+        ClassRoomKey key = new ClassRoomKey(request.getClassroomNumber(), request.getUnitID());
+        Unit unit = un_repository.findById(request.getUnitID()).orElseThrow();
+
+        Optional<ClassRoom> check = c_repository.findByPotentialKey(key.getClassroomNumber(), key.getUnitID());
+        if (check.isEmpty()) {
+            ClassRoom newClassRoom = new ClassRoom();
+            newClassRoom.setClassroomNumber(request.getClassroomNumber());
+            newClassRoom.setUnitID(unit.getId());
+            newClassRoom.setCapacity(request.getCapacity());
+            newClassRoom.setUnit(unit);
+            return c_repository.save(newClassRoom);
+        }
+        return check.get();
     }
     @Override
     public Optional<ClassRoom> findClassRoomByID(ClassRoomKey id) {
-        return c_repository.findById(id);
+        return c_repository.findByPotentialKey(id.getClassroomNumber(), id.getUnitID());
     }
     @Override
     public String updateClassRoom(ClassRoomUpdRequest request) {
-        /*ClassRoom newClassRoom = new ClassRoom();*/
-        /*newClassRoom.setId(key);
-        newClassRoom.setCapacity(request.getNewCapacity());
-        newClassRoom.setUnit(unit);
-        c_repository.deleteById(request.getOld());
-        c_repository.save(newClassRoom);*/
-
-        ClassRoomKey key = new ClassRoomKey(request.getOld().getClassroomNumber(), request.getOld().getUnitName());
-        Optional<ClassRoom> old = c_repository.findById(key);
+        Optional<ClassRoom> old = c_repository.findByPotentialKey(request.getOld().getClassroomNumber(), request.getOld().getUnitID());
         if (old.isEmpty()){
-            return "There is no classroom " + key.getClassroomNumber() + " in unit " + key.getUnitName();
+            return "There is no classroom " + request.getOld().getClassroomNumber() + " in unit " + request.getOld().getUnitID();
         }
 
         c_repository.update(
-                key.getUnitName(),
+                old.get().getId(),
                 request.getOld().getClassroomNumber(),
                 request.getNewNumber(),
                 request.getNewCapacity()
@@ -386,7 +416,8 @@ public class UnivServiceImpl implements UnivService {
     }
     @Transactional
     public void deleteClassRoom(ClassRoomKey id) {
-        c_repository.deleteById(id);
+        Optional<ClassRoom> toDel = c_repository.findByPotentialKey(id.getClassroomNumber(), id.getUnitID());
+        toDel.ifPresent(classroom -> c_repository.deleteById(toDel.get().getId()));
     }
 
     // methods for distances
@@ -440,42 +471,31 @@ public class UnivServiceImpl implements UnivService {
 
     @Override
     public String saveLesson(LessonRequest request) {
-        Disciplines discipline = d_repository
-                .findById(
-                        new DisciplinesKey(
-                                request.getDisciplineName(), request.getGroupName(), request.getTeacherEmail()
-                        )
-                ).orElseThrow();
-        ClassRoom classRoom = c_repository
-                .findById(
-                        new ClassRoomKey(
-                                request.getClassroomNumber(), request.getUnitName()
-                        )
-                ).orElseThrow();
+        Optional<Disciplines> discipline = d_repository.findById(request.getDisciplineID());
+        Optional<ClassRoom> classRoom = c_repository.findById(request.getClassRoomID());
 
-        String isNormal = isNormalLesson(discipline, classRoom, request);
+        if (discipline.isPresent() && classRoom.isPresent()) {
+            String isNormal = isNormalLesson(discipline.get(), classRoom.get(), request);
 
-        if (isNormalLessonCheckerAnswer(isNormal)) {
-            l_repository.save(request.toEntity(discipline, classRoom));
-        } else{
-            isNormal = "Lesson not added." + isNormal;
+            if (isNormalLessonCheckerAnswer(isNormal)) {
+                l_repository.save(request.toEntity(discipline.get(), classRoom.get()));
+            } else {
+                isNormal = "Lesson not added." + isNormal;
+            }
+
+            return isNormal;
         }
-
-        return isNormal;
+        return "Lesson not added. Discipline or classroom not exist";
     }
 
     @Override
     public Optional<Lesson> findLessonByID(LessonRequest request) {
-        Disciplines discipline = d_repository
-                .findById(
-                        new DisciplinesKey(request.getDisciplineName(), request.getGroupName(), request.getTeacherEmail())
-                ).orElseThrow();
-        ClassRoom classRoom = c_repository
-                .findById(
-                        new ClassRoomKey(request.getClassroomNumber(), request.getUnitName())
-                ).orElseThrow();
-
-        return l_repository.findById(request.toEntity(discipline, classRoom).getId());
+        Optional<Disciplines> discipline = d_repository.findById(request.getDisciplineID());
+        Optional<ClassRoom> classRoom = c_repository.findById(request.getClassRoomID());
+        if (discipline.isPresent() && classRoom.isPresent()) {
+            return l_repository.findById(request.toEntity(discipline.get(), classRoom.get()).getId());
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -485,39 +505,33 @@ public class UnivServiceImpl implements UnivService {
 
     @Override
     public String updateLesson(LessonUpdRequest request) {
-        Disciplines discipline = d_repository
-                .findById(
-                        new DisciplinesKey(request.getNewDisciplineName(), request.getNewGroupName(), request.getNewTeacherEmail())
-                ).orElseThrow();
-        ClassRoom classRoom = c_repository
-                .findById(
-                        new ClassRoomKey(request.getNewClassroomNumber(), request.getNewUnitName())
-                ).orElseThrow();
+        Optional<Disciplines> discipline = d_repository.findById(request.getNewDisciplineID());
+        Optional<ClassRoom> classRoom = c_repository.findById(request.getNewClassRoomID());
 
-        Lesson newLesson = new Lesson(request.getNewId(), classRoom, discipline);
+        if (discipline.isPresent() && classRoom.isPresent()) {
+            Lesson newLesson = new Lesson(request.getNewId(), classRoom.get(), discipline.get());
 
-        String isNormal = isNormalLesson(
-                discipline,
-                classRoom,
-                new LessonRequest(
-                        request.getNewDisciplineName(),
-                        request.getNewGroupName(),
-                        request.getNewTeacherEmail(),
-                        request.getNewClassroomNumber(),
-                        request.getNewUnitName(),
-                        request.getNewDate())
-        );
+            String isNormal = isNormalLesson(
+                    discipline.get(),
+                    classRoom.get(),
+                    new LessonRequest(
+                            request.getNewDisciplineID(),
+                            request.getNewClassRoomID(),
+                            request.getNewDate())
+            );
 
-        Lesson tmpOld = l_repository.findById(request.getOldId()).orElseThrow();
-        l_repository.deleteById(request.getOldId());
-        if (isNormalLessonCheckerAnswer(isNormal)) {
-            l_repository.save(newLesson);
-        } else {
-            l_repository.save(tmpOld);
-            isNormal = "Cannot update lesson with causes:" + isNormal;
+            Lesson tmpOld = l_repository.findById(request.getOldId()).orElseThrow();
+            l_repository.deleteById(request.getOldId());
+            if (isNormalLessonCheckerAnswer(isNormal)) {
+                l_repository.save(newLesson);
+            } else {
+                l_repository.save(tmpOld);
+                isNormal = "Cannot update lesson with causes:" + isNormal;
+            }
+
+            return isNormal;
         }
-
-        return isNormal;
+        return "Cannot update lesson with causes: Classroom or discipline not exist";
     }
 
     @Override
@@ -537,11 +551,11 @@ public class UnivServiceImpl implements UnivService {
         String retVal = "";
 
         // is normal classroom capacity
-        Group group = discipline.getGroupName();
+        Group group = discipline.getGroup();
         int countStudents = group.getStudents().size();
         if (countStudents > classRoom.getCapacity()){
             retVal += "\nClassroom "
-                    + classRoom.getId().getClassroomNumber()
+                    + classRoom.getClassroomNumber()
                     + " has insufficient capacity for group "
                     + group.getGroupName();
         }
@@ -550,24 +564,29 @@ public class UnivServiceImpl implements UnivService {
         List<Lesson> lessonsAtDate = l_repository.findLessonsByDate(request.getDate());
         int countStudentsGlobal = countStudents;
         int countGroups = 1;
+        ClassRoom curClassroom;
+        Disciplines curDiscipline;
         for (Lesson l : lessonsAtDate){
+            curClassroom = c_repository.findById(l.getId().getClassroom()).orElseThrow();
+            curDiscipline = d_repository.findById(l.getId().getDiscipline()).orElseThrow();
             if (l.getId().getDate().compareTo(request.getDate()) == 0
-                    && l.getId().getClassroom().getClassroomNumber().equals(classRoom.getId().getClassroomNumber())
-                    && !( (group.getGroupName()) .equals(l.getDiscipline().getId().getGroupName()) ) ){
-                countStudentsGlobal += l.getDiscipline().getGroupName().getStudents().size();
+                    && curClassroom.getClassroomNumber().equals(classRoom.getClassroomNumber())
+                    && !( (group.getGroupName()) .equals(curDiscipline.getGroup().getGroupName()) ) ){
+                countStudentsGlobal += curDiscipline.getGroup().getStudents().size();
                 ++ countGroups;
             }
         }
         if (countStudentsGlobal != countStudents){
             retVal += "\n Classroom "
-                    + classRoom.getId().getClassroomNumber()
+                    + classRoom.getClassroomNumber()
                     + " has insufficient capacity for "
                     + countGroups + " groups ";
         }
 
         // is normal time
         for (Lesson l : lessonsAtDate){
-            if ( (l.getDiscipline().getId().getGroupName()) .equals(group.getGroupName())
+            curDiscipline = d_repository.findById(l.getId().getDiscipline()).orElseThrow();
+            if ( (curDiscipline.getGroup().getGroupName()) .equals(group.getGroupName())
                 && (l.getId().getDate()) .compareTo(request.getDate()) == 0 ){
                 retVal += "\n There is already a lesson for group "
                         + group.getGroupName()
@@ -580,37 +599,40 @@ public class UnivServiceImpl implements UnivService {
         // get all lessons for this group at this date
         List<Lesson> lessonAtDateAddingGroup = new ArrayList<>();
         for (Lesson l : lessonsAtDate){
-            if ( (l.getDiscipline().getId().getGroupName()) .equals(group.getGroupName()) ){
+            curDiscipline = d_repository.findById(l.getId().getDiscipline()).orElseThrow();
+            if ( (curDiscipline.getGroup().getGroupName()) .equals(group.getGroupName()) ){
                 lessonAtDateAddingGroup.add(l);
             }
         }
         // find previous lesson
         Lesson prevLesson = getPrevious(lessonAtDateAddingGroup, request.getDate());
-        // check transfer time
-        if (prevLesson != null && !(prevLesson.getId().getClassroom().getUnitName().equals(classRoom.getId().getUnitName()))){
-            Duration timeToPrevLesson = getPositiveDuration(
-                    request.getDate().toInstant(),
-                    prevLesson.getId().getDate().toInstant()
-                    );
+        if (prevLesson != null) {
+            curClassroom = c_repository.findById(prevLesson.getId().getClassroom()).orElseThrow();
+            // check transfer time
+            if (!(curClassroom.getUnit().getUnitName().equals(classRoom.getUnit().getUnitName()))) {
+                Duration timeToPrevLesson = getPositiveDuration(
+                        request.getDate().toInstant(),
+                        prevLesson.getId().getDate().toInstant()
+                );
 
-            long minutesToPrevious = timeToPrevLesson.toMinutes() - 90; // -90 for get end of lesson
-            Distance distance = dist_repository.findById(
-                    new DistanceKey(
-                            request.getUnitName(),
-                            prevLesson.getClassroom().getUnit().getUnitName()
-                    )
-            ).orElseThrow();
-            long timeBetweenUnits = distance.getTimeMinutes();
+                long minutesToPrevious = timeToPrevLesson.toMinutes() - 90; // -90 for get end of lesson
+                Distance distance = dist_repository.findById(
+                        new DistanceKey(
+                                c_repository.findById(request.getClassRoomID()).orElseThrow().getUnitID(),
+                                prevLesson.getClassroom().getUnit().getId()
+                        )
+                ).orElseThrow();
+                long timeBetweenUnits = distance.getTimeMinutes();
 
-            if (timeBetweenUnits > minutesToPrevious){
-                retVal += "\nTime between units "
-                        + request.getUnitName()
-                        + " and "
-                        + prevLesson.getClassroom().getUnit().getUnitName()
-                        + " is too long. Choose other unit for this class.";
+                if (timeBetweenUnits > minutesToPrevious) {
+                    retVal += "\nTime between units "
+                            + classRoom.getUnit().getUnitName()
+                            + " and "
+                            + prevLesson.getClassroom().getUnit().getUnitName()
+                            + " is too long. Choose other unit for this class.";
+                }
             }
         }
-
 
         // is normal count hours
         // get count hours at week

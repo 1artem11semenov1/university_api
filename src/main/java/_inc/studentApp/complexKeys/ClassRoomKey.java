@@ -18,5 +18,5 @@ public class ClassRoomKey implements Serializable {
     @Column(name = "number")
     String classroomNumber;
     @Column(name = "unit_name")
-    String unitName;
+    Long unitID;
 }

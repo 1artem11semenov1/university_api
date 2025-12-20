@@ -10,13 +10,13 @@ import lombok.*;
 @AllArgsConstructor
 public class ClassRoomRequest {
     private String classroomNumber;
-    private String unitName;
+    private Long unitID;
     private int capacity;
 
     public static ClassRoomRequest fromEntity(ClassRoom classRoom){
         ClassRoomRequest cdto = new ClassRoomRequest();
-        cdto.setClassroomNumber(classRoom.getId().getClassroomNumber());
-        cdto.setUnitName(classRoom.getId().getUnitName());
+        cdto.setClassroomNumber(classRoom.getClassroomNumber());
+        cdto.setUnitID(classRoom.getUnitID());
         cdto.setCapacity(classRoom.getCapacity());
         return cdto;
     }

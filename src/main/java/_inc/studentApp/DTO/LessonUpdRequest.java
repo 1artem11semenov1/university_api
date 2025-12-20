@@ -9,35 +9,24 @@ import _inc.studentApp.model.Lesson;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.util.Date;
 
 @Getter
 public class LessonUpdRequest {
-    @NotBlank
-    private String disciplineName;
-    @NotBlank
-    private String groupName;
-    @NotBlank
-    private String teacherEmail;
-    @NotBlank
-    private String classroomNumber;
-    @NotBlank
-    private String unitName;
     @NotNull
+    private Long disciplineID;
+    @NotNull
+    private Long classRoomID;
+    @NonNull
     private Date date;
 
-    @NotBlank
-    private String newDisciplineName;
-    @NotBlank
-    private String newGroupName;
-    @NotBlank
-    private String newTeacherEmail;
-    @NotBlank
-    private String newClassroomNumber;
-    @NotBlank
-    private String newUnitName;
     @NotNull
+    private Long newDisciplineID;
+    @NotNull
+    private Long newClassRoomID;
+    @NonNull
     private Date newDate;
 
     public Lesson toEntity(Disciplines disc, ClassRoom classRoom){
@@ -56,16 +45,16 @@ public class LessonUpdRequest {
 
     public LessonKey getOldId(){
         return new LessonKey(
-                new DisciplinesKey(disciplineName, groupName, teacherEmail),
-                new ClassRoomKey(classroomNumber, unitName),
+                disciplineID,
+                classRoomID,
                 date
         );
     }
 
     public LessonKey getNewId(){
         return new LessonKey(
-                new DisciplinesKey(newDisciplineName, newGroupName, newTeacherEmail),
-                new ClassRoomKey(newClassroomNumber, newUnitName),
+                newDisciplineID,
+                newDisciplineID,
                 newDate
         );
     }

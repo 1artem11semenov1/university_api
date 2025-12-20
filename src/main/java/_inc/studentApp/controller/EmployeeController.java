@@ -129,7 +129,7 @@ public class EmployeeController {
         return service.getGroupsWithTeacher();
     }
 
-    @GetMapping("/students-{group}")
+    @GetMapping("/students/{group}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @Operation(
             summary = "Получить список студентов из группы",

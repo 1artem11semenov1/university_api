@@ -16,7 +16,9 @@ public interface LessonRepository extends JpaRepository<Lesson, LessonKey> {
     List<Lesson> findLessonsByDate(@Param("inp_date") Date date);
 
     @Query(
-            value = "SELECT * FROM schedule" +
+            value = "SELECT classroom_id, discipline_id, date FROM schedule" +
+                    " JOIN disciplines ON schedule.discipline_id = disciplines.id" +
+                    " JOIN groups ON disciplines.group_id = groups.id" +
                     " WHERE group_name = :inp_group " +
                     " and DATE(date) >= DATE(:date_week_start) " +
                     " and DATE(date) <= DATE(:date_week_end) "
@@ -26,15 +28,19 @@ public interface LessonRepository extends JpaRepository<Lesson, LessonKey> {
             , @Param("date_week_start") Date start
             , @Param("date_week_end") Date end);
 
-    @Query(value = "SELECT * FROM schedule" +
-            " WHERE group_name = :inp_group"
+    @Query(value = "SELECT classroom_id, discipline_id, date FROM schedule" +
+            " JOIN disciplines ON schedule.discipline_id = disciplines.id" +
+            " JOIN groups ON disciplines.group_id = groups.id" +
+            " WHERE group_name = :inp_group "
             , nativeQuery = true)
     List<Lesson> findAllWithGroup(@Param("inp_group") String groupName);
 
 
     @Query(
-            value = "SELECT * FROM schedule" +
-                    " WHERE teacher_email = :inp_email " +
+            value = "SELECT classroom_id, discipline_id, date  FROM schedule" +
+                    " JOIN disciplines ON discipline_id = disciplines.id" +
+                    " JOIN employees ON disciplines.teacher_id = employees.id" +
+                    " WHERE employees.email = :inp_email" +
                     " and DATE(date) >= DATE(:date_week_start) " +
                     " and DATE(date) <= DATE(:date_week_end) "
             , nativeQuery = true
@@ -44,7 +50,9 @@ public interface LessonRepository extends JpaRepository<Lesson, LessonKey> {
             , @Param("date_week_end") Date end);
 
     @Query(value = "SELECT * FROM schedule" +
-            " WHERE teacher_email = :inp_email"
+            " JOIN disciplines ON discipline_id = disciplines.id" +
+            " JOIN employees ON disciplines.teacher_id = employees.id" +
+            " WHERE employees.email = :inp_email"
             , nativeQuery = true)
     List<Lesson> findAllWithTeacher(@Param("inp_email") String email);
 

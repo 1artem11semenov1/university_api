@@ -32,7 +32,7 @@ public class User {
             name = "student_id",
             foreignKey = @ForeignKey(
                     name = "users_students",
-                    foreignKeyDefinition = "FOREIGN KEY (student_id) REFERENCES students(email) ON UPDATE CASCADE ON DELETE CASCADE"
+                    foreignKeyDefinition = "FOREIGN KEY (student_id) REFERENCES students(id) ON UPDATE CASCADE ON DELETE CASCADE"
             )
     )
     private Student student;
@@ -42,7 +42,7 @@ public class User {
             name = "employee_id",
             foreignKey = @ForeignKey(
                     name = "users_employees",
-                    foreignKeyDefinition = "FOREIGN KEY (employee_id) REFERENCES employees(email) ON UPDATE CASCADE ON DELETE CASCADE"
+                    foreignKeyDefinition = "FOREIGN KEY (employee_id) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE CASCADE"
             )
     )
     private Employee employee;

@@ -14,9 +14,9 @@ import lombok.*;
 @AllArgsConstructor
 public class DistanceRequest {
     @NotBlank
-    private String unitFrom;
+    private Long unitFrom;
     @NotBlank
-    private String unitTo;
+    private Long unitTo;
     @NotNull
     private int time;
 

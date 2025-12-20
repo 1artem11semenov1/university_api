@@ -61,8 +61,8 @@ public class StudentService {
             DisciplineAndTeacherRequest newRequest = new DisciplineAndTeacherRequest();
             newRequest.setDiscipline(DisciplineDTO.fromEntity(d));
 
-            Employee teacher = d.getTeacherEmail();
-            List<Position> positions = new ArrayList<>();
+            Employee teacher = d.getTeacher();
+            List<Position> positions;
             if (teacher != null){
                 positions = teacher.getPositions();
                 newRequest.setTeacher(EmployeeDTO.fromEntity(teacher));

@@ -14,10 +14,9 @@ import java.util.Date;
 @EqualsAndHashCode
 @Getter
 public class LessonKey implements Serializable {
-    @Embedded
-    DisciplinesKey discipline;
-    @Embedded
-    ClassRoomKey classroom;
+    Long discipline;
+
+    Long classroom;
 
     Date date;
 }

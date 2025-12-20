@@ -6,6 +6,7 @@ import _inc.studentApp.model.Disciplines;
 import _inc.studentApp.model.Lesson;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.Date;
@@ -16,42 +17,17 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LessonRequest {
-    @NotBlank
-    private String disciplineName;
-    @NotBlank
-    private String groupName;
-    @NotBlank
-    private String teacherEmail;
-    @NotBlank
-    private String classroomNumber;
-    @NotBlank
-    private String unitName;
+    @NotNull
+    private Long disciplineID;
+    @NotNull
+    private Long classRoomID;
     @NonNull
     private Date date;
 
     public static LessonRequest fromEntity(Lesson lesson){
         LessonRequest ldto = new LessonRequest();
-        ldto.setDisciplineName(lesson
-                .getId()
-                .getDiscipline()
-                .getName());
-        ldto.setGroupName(lesson
-                .getId()
-                .getDiscipline()
-                .getGroupName());
-        ldto.setTeacherEmail(lesson
-                .getId()
-                .getDiscipline()
-                .getTeacherEmail()
-        );
-        ldto.setClassroomNumber(lesson
-                .getId()
-                .getClassroom()
-                .getClassroomNumber());
-        ldto.setUnitName(lesson
-                .getId()
-                .getClassroom()
-                .getUnitName());
+        ldto.setDisciplineID(lesson.getId().getDiscipline());
+        ldto.setClassRoomID(lesson.getId().getClassroom());
         ldto.setDate(lesson
                 .getId()
                 .getDate());

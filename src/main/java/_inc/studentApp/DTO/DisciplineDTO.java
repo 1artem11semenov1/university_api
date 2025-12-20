@@ -17,8 +17,8 @@ public class DisciplineDTO {
     public static DisciplineDTO fromEntity(Disciplines discipline){
         DisciplineDTO ddto = new DisciplineDTO();
         ddto.setDisciplineName(discipline.getDisciplineName());
-        ddto.setGroupName(discipline.getId().getGroupName());
-        ddto.setTeacherEmail(discipline.getId().getTeacherEmail());
+        ddto.setGroupName(discipline.getGroup().getGroupName());
+        ddto.setTeacherEmail(discipline.getTeacher().getEmail());
         ddto.setCountHours(discipline.getCountHours());
         return ddto;
     }

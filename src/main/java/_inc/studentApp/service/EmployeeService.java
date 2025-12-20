@@ -56,7 +56,7 @@ public class EmployeeService {
             List<Disciplines> disciplines = d_repository.findByTeacherEmail(user.get().getEmail());
             Set<Group> groups = new HashSet<>();
             for (Disciplines d : disciplines){
-                groups.add(g_repository.findByGroupName(d.getId().getGroupName()).orElseThrow());
+                groups.add(g_repository.findByGroupName(d.getGroup().getGroupName()).orElseThrow());
             }
 
             return groups.stream().toList();

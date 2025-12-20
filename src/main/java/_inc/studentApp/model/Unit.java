@@ -17,7 +17,11 @@ import java.util.List;
 @Setter
 public class Unit {
     @Id
-    @Column(name = "unit_name")
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    Long id;
+
+    @Column(name = "unit_name", unique = true)
+    @NotBlank
     String unitName;
 
     @NotBlank

@@ -15,6 +15,9 @@ import java.time.Period;
 @Getter
 @Setter
 public abstract class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    Long id;
     @NotBlank
     private String firstName;
     @NotBlank
@@ -22,7 +25,6 @@ public abstract class Person {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull
     private LocalDate dateOfBirth;
-    @Id
     @Column(unique = true)
     private String email;
     @Transient

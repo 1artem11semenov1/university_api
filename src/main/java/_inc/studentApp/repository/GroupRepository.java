@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface GroupRepository extends JpaRepository<Group, String> {
+public interface GroupRepository extends JpaRepository<Group, Long> {
     void deleteByGroupName(String name);
     Optional<Group> findByGroupName(String name);
 

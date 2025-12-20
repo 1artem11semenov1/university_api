@@ -1119,11 +1119,11 @@ public class UnivController {
         Disciplines created = service.saveDiscipline(request);
         return "Discipline " + created.getDisciplineName() + " successfully saved";
     }
-    @GetMapping("/discipline_find/{name}/{group}/{temail}")
+    @GetMapping("/discipline_find/{name}/{group}/{teacherID}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти дисциплину по ключу",
-            description = "Поиск дисциплины по составному ключу (название, группа, email преподавателя), который берёт из пути. Требует роль ADMIN.",
+            description = "Поиск дисциплины по составному ключу (название, id группы, id преподавателя), который берёт из пути. Требует роль ADMIN.",
             tags = {"Disciplines"},
             responses = {
                     @ApiResponse(
@@ -1148,10 +1148,10 @@ public class UnivController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     public DisciplineDTO findDisciplineByName(@PathVariable("name") String disciplineName,
-                                              @PathVariable("group") String groupName,
-                                              @PathVariable("temail") String teacherEmail)
+                                              @PathVariable("group") Long groupID,
+                                              @PathVariable("teacherID") Long teacherID)
     {
-        DisciplinesKey dk = new DisciplinesKey(disciplineName, groupName, teacherEmail);
+        DisciplinesKey dk = new DisciplinesKey(disciplineName, groupID, teacherID);
         Disciplines discipline = service.findByDisciplineKey(dk).orElseThrow(() -> new EntityNotFoundException("Discipline not found"));
         return DisciplineDTO.fromEntity(discipline);
     }
@@ -1243,10 +1243,10 @@ public class UnivController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     public void deleteDiscipline(@PathVariable("name") String disciplineName,
-                                 @PathVariable("group") String groupName,
-                                 @PathVariable("teacher") String teacherEmail)
+                                 @PathVariable("group") Long groupID,
+                                 @PathVariable("teacher") Long teacherID)
     {
-        DisciplinesKey key = new DisciplinesKey(disciplineName, groupName, teacherEmail);
+        DisciplinesKey key = new DisciplinesKey(disciplineName, groupID, teacherID);
         service.deleteDiscipline(key);
     }
 
@@ -1528,13 +1528,13 @@ public class UnivController {
     )
     public String saveClassRoom(@RequestBody ClassRoomRequest request) {
         ClassRoom created = service.saveClassRoom(request);
-        return "ClassRoom " + created.getId().getClassroomNumber() + " in unit " + created.getId().getUnitName() + " successfully saved";
+        return "ClassRoom " + created.getClassroomNumber() + " in unit " + created.getUnit().getUnitName() + " successfully saved";
     }
     @GetMapping("/classroom_find/{number}/{unit}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти аудиторию по ключу",
-            description = "Поиск аудитории по составному ключу (номер аудитории, название подразделения), который берёт из пути. Требует роль ADMIN.",
+            description = "Поиск аудитории по составному ключу (номер аудитории, id подразделения), который берёт из пути. Требует роль ADMIN.",
             tags = {"ClassRooms"},
             responses = {
                     @ApiResponse(
@@ -1559,9 +1559,9 @@ public class UnivController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     public ClassRoomRequest findClassRoomById(@PathVariable("number") String classroomNumber,
-                                              @PathVariable("unit") String unitName)
+                                              @PathVariable("unit") Long unitID)
     {
-        ClassRoomKey key = new ClassRoomKey(classroomNumber, unitName);
+        ClassRoomKey key = new ClassRoomKey(classroomNumber, unitID);
         ClassRoom classRoom = service.findClassRoomByID(key).orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
         return ClassRoomRequest.fromEntity(classRoom);
     }
@@ -1645,9 +1645,9 @@ public class UnivController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     public void deleteClassRoom(@PathVariable("number") String number,
-                                @PathVariable("unit") String unitName)
+                                @PathVariable("unit") Long unitID)
     {
-        ClassRoomKey key = new ClassRoomKey(number, unitName);
+        ClassRoomKey key = new ClassRoomKey(number, unitID);
         service.deleteClassRoom(key);
     }
 
@@ -1763,8 +1763,8 @@ public class UnivController {
             },
             security = @SecurityRequirement(name = "bearerAuth")
     )
-    public DistanceRequest findDistanceById(@PathVariable("from") String unitFrom,
-                                            @PathVariable("to") String unitTo) {
+    public DistanceRequest findDistanceById(@PathVariable("from") Long unitFrom,
+                                            @PathVariable("to") Long unitTo) {
         DistanceKey key = new DistanceKey(unitFrom,unitTo);
         Distance dist = service.findDistanceByID(key).orElseThrow(() -> new EntityNotFoundException("Distance not found"));
         return DistanceRequest.fromEntity(dist);
@@ -1847,8 +1847,8 @@ public class UnivController {
             },
             security = @SecurityRequirement(name = "bearerAuth")
     )
-    public void deleteDistance(@PathVariable("from") String unitFrom,
-                               @PathVariable("to") String unitTo)
+    public void deleteDistance(@PathVariable("from") Long unitFrom,
+                               @PathVariable("to") Long unitTo)
     {
         DistanceKey key = new DistanceKey(unitFrom, unitTo);
         service.deleteDistance(key);
@@ -1909,11 +1909,8 @@ public class UnivController {
                             examples = @ExampleObject(
                                     value = """
                                             {
-                                                 "disciplineName": "programming",
-                                                 "groupName": "23.Б11-ПУ",
-                                                 "teacherEmail": "Karen_Pagac75@yahoo.com",
-                                                 "classroomNumber": "test aud",
-                                                 "unitName": "Central unit",
+                                                 "disciplineID": "1",
+                                                 "classRoomID" : "2",
                                                  "date" : "2025-11-04T17:30:00.000+03:00"
                                              }
                                             """
@@ -1930,7 +1927,7 @@ public class UnivController {
                                             type = "string",
                                             example = """
                                                     ---------Вариант 1---------
-                                                    Lesson of programming for group 23.Б11-ПУ with teacher Karen_Pagac75@yahoo.com in classroom test aud successfully saved! <опционально: данные о том больше или меньше занятий, относительно учебного плана добавлено>
+                                                    Lesson successfully saved! <опционально: данные о том больше или меньше занятий, относительно учебного плана добавлено>
                                                     ---------Вариант 2---------
                                                     Lesson not added. <список причин>
                                                     """
@@ -1953,21 +1950,17 @@ public class UnivController {
     public String saveLesson(@RequestBody LessonRequest request) {
         String createLog = service.saveLesson(request);
         if (!createLog.startsWith("Lesson not added.")) {
-            return "Lesson of " + request.getDisciplineName()
-                    + " for group " + request.getGroupName()
-                    + " with teacher " + request.getTeacherEmail()
-                    + " in classroom " + request.getClassroomNumber()
-                    + " successfully saved!\n"
+            return "Lesson successfully saved!\n"
                     + createLog;
         }
         return createLog;
     }
-    @GetMapping("/lesson_find/{discipline}/{group}/{teacher}/{number}/{unit}/{date}")
+    @GetMapping("/lesson_find/{disciplineID}/{classRoomID}/{date}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Найти занятие по ключу",
-            description = "Поиск занятия по составному ключу (дисциплина, группа, email преподавателя, номер класса, название подразделения, дата проведения), который берёт из пути. Требует роль ADMIN."
-            +"\nпример: localhost:8080/api/v1/lesson_find/math/23.Б11-ПУ/Mac63@yahoo.com/212Д/AM-CP faculty/2025-10-22T09:30:00.000+03:00",
+            description = "Поиск занятия по составному ключу (ID дисциплины, ID класса, дата проведения), который берёт из пути. Требует роль ADMIN."
+            +"\nпример: localhost:8080/api/v1/lesson_find/1/2/2025-10-22T09:30:00.000+03:00",
             tags = {"Schedule"},
             responses = {
                     @ApiResponse(
@@ -1991,11 +1984,8 @@ public class UnivController {
             },
             security = @SecurityRequirement(name = "bearerAuth")
     )
-    public LessonRequest findLessonById(@PathVariable("discipline") String disciplineName,
-                                        @PathVariable("group") String groupName,
-                                        @PathVariable("teacher") String teacherEmail,
-                                        @PathVariable("number") String classRoom,
-                                        @PathVariable("unit") String unitName,
+    public LessonRequest findLessonById(@PathVariable("disciplineID") Long disciplineID,
+                                        @PathVariable("classRoomID") Long classRoomID,
                                         @PathVariable("date") String date)
     {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
@@ -2005,11 +1995,9 @@ public class UnivController {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        LessonRequest request = new LessonRequest(disciplineName,
-                groupName,
-                teacherEmail,
-                classRoom,
-                unitName,
+        LessonRequest request = new LessonRequest(
+                disciplineID,
+                classRoomID,
                 d
         );
         Lesson lesson = service.findLessonByID(request).orElseThrow(() -> new EntityNotFoundException("Lesson not found"));
@@ -2071,17 +2059,11 @@ public class UnivController {
                             examples = @ExampleObject(
                                     value = """
                                             {
-                                                 "disciplineName": "programming",
-                                                 "groupName": "23.Б11-ПУ",
-                                                 "teacherEmail": "Karen_Pagac75@yahoo.com",
-                                                 "classroomNumber": "test aud",
-                                                 "unitName": "Central unit",
+                                                 "disciplineID": 1,
+                                                 "classRoomID": 2,
                                                  "date" : "2025-11-04T17:30:00.000+03:00",
-                                                 "newDisciplineName": "programming",
-                                                 "newGroupName": "23.Б11-ПУ",
-                                                 "newTeacherEmail": "Karen_Pagac75@yahoo.com",
-                                                 "newClassroomNumber": "test aud",
-                                                 "newUnitName": "Central unit",
+                                                 "newDisciplineID": 2,
+                                                 "newClassRoomID": 2,
                                                  "newDate" : "2025-11-04T09:30:00.000+03:00"
                                              }
                                             """
@@ -2097,7 +2079,7 @@ public class UnivController {
                                             type = "string",
                                             example = """
                                                     ---------Вариант 1---------
-                                                    Lesson of <new_discipline> for group <new_group> with teacher <new_teacher> in classroom <new_classroom> successfully updated.
+                                                    Lesson successfully updated.
                                                     ---------Вариант 2---------
                                                     Cannot update lesson with causes: <список причин>
                                                     """
@@ -2121,20 +2103,16 @@ public class UnivController {
     public String updateLesson(@RequestBody LessonUpdRequest request) {
         String createLog = service.updateLesson(request);
         if (!createLog.startsWith("Cannot update lesson with causes:")) {
-            return "Lesson of " + request.getNewDisciplineName()
-                    + " for group " + request.getNewGroupName()
-                    + " with teacher " + request.getNewTeacherEmail()
-                    + " in classroom " + request.getNewClassroomNumber()
-                    + " successfully updated!\n"
+            return "Lesson successfully updated!\n"
                     + createLog;
         }
         return createLog;
     }
-    @DeleteMapping("/delete_lesson/{discipline}/{group}/{teacher}/{number}/{unit}/{date}")
+    @DeleteMapping("/delete_lesson/{disciplineID}/{classRoomID}/{date}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Удаление занятия по ключу",
-            description = "Удаляет дисциплину с указанным ключем (discipline, group, teacher, number, unit, date), который берется из пути. Требуется роль ADMIN",
+            description = "Удаляет дисциплину с указанным ключем (disciplineID, classRoomID, date), который берется из пути. Требуется роль ADMIN",
             tags = {"Schedule"},
             responses = {
                     @ApiResponse(
@@ -2152,11 +2130,8 @@ public class UnivController {
             },
             security = @SecurityRequirement(name = "bearerAuth")
     )
-    public void deleteLesson(@PathVariable("discipline") String disciplineName,
-                             @PathVariable("group") String groupName,
-                             @PathVariable("teacher") String teacherEmail,
-                             @PathVariable("number") String classRoom,
-                             @PathVariable("unit") String unitName,
+    public void deleteLesson(@PathVariable("disciplineID") Long disciplineID,
+                             @PathVariable("classRoomID") Long classRoomID,
                              @PathVariable("date") String date)
     {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
@@ -2166,11 +2141,9 @@ public class UnivController {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        LessonRequest request = new LessonRequest(disciplineName,
-                groupName,
-                teacherEmail,
-                classRoom,
-                unitName,
+        LessonRequest request = new LessonRequest(
+                disciplineID,
+                classRoomID,
                 d
         );
         service.deleteLesson(request);

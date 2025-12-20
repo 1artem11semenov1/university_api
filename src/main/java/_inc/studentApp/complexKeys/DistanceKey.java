@@ -17,8 +17,8 @@ import java.io.Serializable;
 @Getter
 public class DistanceKey implements Serializable {
     @Column(name = "unit_from")
-    String unitFrom;
+    Long unitFrom;
 
     @Column(name = "unit_to")
-    String unitTo;
+    Long unitTo;
 }
